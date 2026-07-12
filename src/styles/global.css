@@ -126,6 +126,10 @@ section {
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
   section {
     padding: 64px 0;
   }
@@ -136,5 +140,19 @@ section {
 
   .section-subtitle {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  section {
+    padding: 48px 0;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
   }
 }
