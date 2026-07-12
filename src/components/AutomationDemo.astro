@@ -185,6 +185,7 @@
     color: var(--text-secondary);
     margin-top: 4px;
     transition: color 0.3s;
+    white-space: nowrap;
   }
 
   .stage.active .stage-status {
@@ -561,7 +562,7 @@ function activateStage(stage) {
       prevStage.classList.remove('active');
       prevStage.classList.add('done');
       const statusEl = document.getElementById(`status-${stage - 1}`);
-      if (statusEl) statusEl.textContent = '✓ Completado';
+      if (statusEl) statusEl.textContent = '✓ Listo';
     }
   }
 }
@@ -579,7 +580,7 @@ function completeAllStages() {
       connector.classList.add('done');
     }
     const statusEl = document.getElementById(`status-${i}`);
-    if (statusEl) statusEl.textContent = '✓ Completado';
+    if (statusEl) statusEl.textContent = '✓ Listo';
   }
 }
 
@@ -718,7 +719,7 @@ async function runDemo() {
   addLog('Reporte PDF generado y adjuntado automáticamente', 'success');
   await new Promise(r => setTimeout(r, 600));
   addLog('📊 Dashboard en tiempo real actualizado', 'success');
-  setStageStatus(5, '✓ Completado');
+  setStageStatus(5, '✓ Listo');
   addLog('🎯 Factura procesada en 18.4 segundos — Sin intervención humana', 'success');
 
   // Complete visual
