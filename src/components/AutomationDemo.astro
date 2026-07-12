@@ -358,17 +358,33 @@
 
   @media (max-width: 1024px) {
     .pipeline {
-      flex-wrap: wrap;
-      gap: 12px;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      gap: 0;
+      justify-content: flex-start;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 8px;
+    }
+
+    .pipeline::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .pipeline::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
     }
 
     .stage {
       min-width: 100px;
       padding: 12px 16px;
+      scroll-snap-align: start;
     }
 
     .connector {
       width: 40px;
+      flex-shrink: 0;
     }
 
     .demo-panel {
@@ -387,11 +403,75 @@
     }
 
     .stage-title {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
+    }
+
+    .stage-desc {
+      font-size: 0.65rem;
+    }
+
+    .stage-status {
+      font-size: 0.6rem;
+    }
+
+    .connector {
+      width: 24px;
+      height: 3px;
     }
 
     .demo-wrapper {
-      padding: 20px;
+      padding: 16px 12px;
+    }
+
+    .info-card, .log-card {
+      padding: 14px;
+    }
+
+    .info-card h4, .log-card h4 {
+      font-size: 0.8rem;
+    }
+
+    .info-row {
+      font-size: 0.75rem;
+      flex-direction: column;
+      gap: 2px;
+      padding: 5px 0;
+    }
+
+    .info-row .hl {
+      font-size: 0.75rem;
+    }
+
+    .log-entry {
+      font-size: 0.65rem;
+      padding: 3px 6px;
+    }
+
+    .log-container {
+      max-height: 100px;
+    }
+
+    .demo-controls {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .demo-controls .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 20px;
+      font-size: 0.9rem;
+    }
+
+    .particle {
+      width: 8px;
+      height: 8px;
+      top: -2.5px;
+    }
+
+    @keyframes fly {
+      0% { left: -8px; }
+      100% { left: calc(100% + 0px); }
     }
   }
 </style>
