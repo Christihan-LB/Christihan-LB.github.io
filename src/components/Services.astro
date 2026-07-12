@@ -1,0 +1,114 @@
+<section id="services">
+  <div class="container">
+    <span class="section-label">Servicios</span>
+    <h2 class="section-title">¿Cómo puedo ayudarte?</h2>
+    <p class="section-subtitle">
+      Ya sea que necesites automatizar tu empresa, implementar Odoo, o capacitación en IA — 
+      tengo la experiencia para hacerlo.
+    </p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">🏭</div>
+        <h3>Automatización Empresarial</h3>
+        <p>Automatizo procesos manuales y repetitivos en empresas sin área TI: 
+          colegios, clínicas, estudios de abogados, ONGs, gimnasios y más.</p>
+        <ul class="service-features">
+          <li>OCR y digitalización documental</li>
+          <li>Generación automática de reportes</li>
+          <li>Integración con SUNEDU, SIAGIE, UGEL</li>
+          <li>Workflows a medida (n8n, Python)</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">⚡</div>
+        <h3>Desarrollo Odoo</h3>
+        <p>Desarrollador Python en Vauxoo (Odoo Gold Partner). Creo módulos 
+          personalizados, migraciones y contribuciones OCA.</p>
+        <ul class="service-features">
+          <li>Módulos Odoo personalizados</li>
+          <li>Migraciones (v13 → v18, etc.)</li>
+          <li>Integraciones con APIs externas</li>
+          <li>Contribuciones a Odoo Core y OCA</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🎓</div>
+        <h3>Docencia & Capacitación IA</h3>
+        <p>+10 años enseñando IA, ML y Data Science en PUCP. Ofrezco 
+          capacitaciones in-company y mentoría personalizada.</p>
+        <ul class="service-features">
+          <li>Cursos de IA / ML / Deep Learning</li>
+          <li>Capacitación en Odoo para empresas</li>
+          <li>Talleres de Python y automatización</li>
+          <li>Dirección de tesis y proyectos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 28px;
+    transition: all 0.3s;
+  }
+
+  .service-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.1);
+  }
+
+  .service-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .service-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .service-card > p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .service-features {
+    list-style: none;
+    padding: 0;
+  }
+
+  .service-features li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .service-features li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  @media (max-width: 1024px) {
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

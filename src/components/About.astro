@@ -1,0 +1,116 @@
+<section id="about">
+  <div class="container">
+    <span class="section-label">Sobre mí</span>
+    <h2 class="section-title">Academia · Industria · Innovación</h2>
+    <p class="section-subtitle">
+      Ingeniero Mecatrónico y Magíster en Computación por la PUCP. 
+      +10 años de experiencia docente en inteligencia artificial y ciencia de datos.
+      Python Developer en Vauxoo (Odoo Gold Partner). Fundador de Nexo Automatizaciones.
+      Investigador con publicaciones en IEEE y Frontiers.
+    </p>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>🎓 Formación</h3>
+        <ul>
+          <li><strong>MSc Computación</strong> — PUCP (2025)</li>
+          <li><strong>Ing. Mecatrónico</strong> — PUCP (2022)</li>
+          <li><strong>MicroMasters</strong> — MITx / edX (2021)</li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>💼 Experiencia</h3>
+        <ul>
+          <li><strong>Docente</strong> — PUCP (2015–presente)</li>
+          <li><strong>Python/Odoo Dev</strong> — Vauxoo (2023–presente)</li>
+          <li><strong>Head of Engineering</strong> — qAIRa (2020)</li>
+          <li><strong>Research Assistant</strong> — PUCP (2016–2018)</li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>🔧 Stack Tecnológico</h3>
+        <div class="skills-cloud">
+          <span>Python</span><span>Odoo</span><span>PostgreSQL</span>
+          <span>TensorFlow</span><span>Keras</span><span>Scikit-learn</span>
+          <span>Docker</span><span>Git</span><span>JavaScript</span>
+          <span>OWL</span><span>OpenCV</span><span>Power BI</span>
+          <span>R</span><span>C++</span><span>MATLAB</span>
+        </div>
+      </div>
+      <div class="about-card">
+        <h3>📚 Cursos que enseño</h3>
+        <ul>
+          <li>Inteligencia Artificial & Aprendizaje Automático</li>
+          <li>Deep Learning</li>
+          <li>Minería de Datos & Data Science</li>
+          <li>Sistemas ERP (Odoo)</li>
+          <li>Automatización Industrial 4.0</li>
+          <li>Robótica & Visión Computacional</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .about-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: transform 0.2s;
+  }
+
+  .about-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .about-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+
+  .about-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .about-card li {
+    padding: 6px 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .about-card li strong {
+    color: var(--text);
+  }
+
+  .skills-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .skills-cloud span {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 768px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

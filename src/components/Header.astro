@@ -1,0 +1,134 @@
+---
+const navItems = [
+  { label: 'Inicio', href: '#hero' },
+  { label: 'Trayectoria', href: '#timeline' },
+  { label: 'Proyectos', href: '#projects' },
+  { label: 'Publicaciones', href: '#publications' },
+  { label: 'Blog', href: '#blog' },
+  { label: 'Contacto', href: '#contact' },
+];
+---
+
+<header>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="#hero" class="nav-brand">CL<span class="accent">.</span></a>
+      <div class="nav-links">
+        {navItems.map(item => (
+          <a href={item.href} class="nav-link">{item.label}</a>
+        ))}
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path class="sun" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          <circle class="moon" cx="12" cy="12" r="5"/>
+          <line class="moon" x1="12" y1="1" x2="12" y2="3"/>
+          <line class="moon" x1="12" y1="21" x2="12" y2="23"/>
+          <line class="moon" x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line class="moon" x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line class="moon" x1="1" y1="12" x2="3" y2="12"/>
+          <line class="moon" x1="21" y1="12" x2="23" y2="12"/>
+          <line class="moon" x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line class="moon" x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<style>
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .nav-brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-brand .accent {
+    color: var(--accent);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+  }
+
+  .theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .theme-toggle:hover {
+    color: var(--text);
+  }
+
+  .light .sun { display: none; }
+  .moon { display: none; }
+  .light .moon { display: block; }
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }
+    .menu-toggle {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  document.getElementById('themeToggle')?.addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+    const isLight = document.documentElement.classList.contains('light');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+</script>

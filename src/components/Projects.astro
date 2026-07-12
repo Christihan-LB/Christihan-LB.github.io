@@ -1,0 +1,185 @@
+<section id="projects">
+  <div class="container">
+    <span class="section-label">Proyectos</span>
+    <h2 class="section-title">Trabajos destacados</h2>
+    <p class="section-subtitle">
+      Una selección de proyectos comerciales, académicos y de investigación.
+    </p>
+    <div class="projects-grid">
+      <div class="project-card highlight">
+        <div class="project-tag">Comercial · Vauxoo</div>
+        <h3>822 contribuciones Odoo</h3>
+        <p class="stat-line">647 fusionadas (78.7% aceptación) en Odoo Core, Enterprise y OCA.</p>
+        <div class="stats-row">
+          <div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div>
+          <div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div>
+          <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
+          <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
+        </div>
+        <p class="project-detail">Módulos principales: islamicrelief, internal_transfer, nortenas, sale_subscription. Contribuciones en OCA: purchase_order_archive, account_move_name_sequence, purchase_analytic, product_pricelist_supplierinfo, reporting-engine.</p>
+        <div class="project-tech">
+          <span>Python</span><span>PostgreSQL</span><span>Odoo 16-19</span><span>OWL</span><span>XML</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Comercial</div>
+        <h3>Nexo Automatizaciones</h3>
+        <p>Agencia de automatización para empresas sin área TI. Automatización de procesos administrativos, integración SIAGIE/SUNEDU, OCR documental, workflows a medida.</p>
+        <div class="project-tech">
+          <span>Python</span><span>n8n</span><span>OCR</span><span>Docker</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Investigación</div>
+        <h3>Robotic Bartender — Pisco Sour</h3>
+        <p>Desarrollo e implementación de un bartender robótico para preparación automática de Pisco Sour. Publicado en ICMRE 2024 (IEEE), Milán, Italia.</p>
+        <div class="project-tech">
+          <span>Robótica</span><span>IEEE</span><span>Python</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Investigación</div>
+        <h3>EEG + NAO Robot</h3>
+        <p>Sistema de sincronización de triggers para EEG open-source en medición de potenciales evocados visuales. Publicado en Frontiers in Human Neuroscience (2016).</p>
+        <div class="project-tech">
+          <span>EEG</span><span>Python</span><span>BCI</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Patente</div>
+        <h3>Módulo de Medición de Calidad del Aire</h3>
+        <p>Registro INDECOPI (Expediente 000350-2020/DIN). Módulo IoT para monitoreo de calidad del aire con sensores y conectividad.</p>
+        <div class="project-tech">
+          <span>IoT</span><span>Sensores</span><span>Python</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Académico</div>
+        <h3>MITx MicroMasters — Stats & Data Science</h3>
+        <p>Programa del MIT a través de edX. Modelos de clasificación, redes neuronales (CNN, RNN), aprendizaje no supervisado, NLP y sistemas de recomendación.</p>
+        <div class="project-tech">
+          <span>Python</span><span>R</span><span>ML</span><span>Stats</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: all 0.3s;
+  }
+
+  .project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
+  }
+
+  .project-card.highlight {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.05) 100%);
+  }
+
+  .project-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .project-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .stat-line {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .project-detail {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .project-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .project-tech span {
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 1024px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

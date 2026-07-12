@@ -1,0 +1,87 @@
+<section id="blog">
+  <div class="container">
+    <span class="section-label">Blog</span>
+    <h2 class="section-title">Artículos & Reflexiones</h2>
+    <p class="section-subtitle">
+      Notas técnicas sobre IA, Odoo, automatización y docencia.
+    </p>
+    <div class="blog-grid">
+      <div class="blog-card">
+        <span class="blog-date">Próximamente</span>
+        <h3>Automatización de procesos con n8n + Python</h3>
+        <p>Cómo conectar APIs, procesar datos y disparar acciones sin servidores.</p>
+        <span class="blog-tag">Automatización</span>
+      </div>
+      <div class="blog-card">
+        <span class="blog-date">Próximamente</span>
+        <h3>De la academia a la industria: enseñar IA vs construir IA</h3>
+        <p>Lecciones después de 10 años en ambos mundos.</p>
+        <span class="blog-tag">Carrera</span>
+      </div>
+      <div class="blog-card">
+        <span class="blog-date">Próximamente</span>
+        <h3>Guía: migrar Odoo Community a Enterprise</h3>
+        <p>Paso a paso para una migración limpia de módulos y datos.</p>
+        <span class="blog-tag">Odoo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .blog-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .blog-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .blog-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .blog-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 10px 0;
+    line-height: 1.35;
+  }
+
+  .blog-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .blog-tag {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 768px) {
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
