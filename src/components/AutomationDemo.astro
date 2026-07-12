@@ -1,0 +1,658 @@
+<section id="demo">
+  <div class="container">
+    <span class="section-label">Demo en vivo</span>
+    <h2 class="section-title">Automatización inteligente de facturación</h2>
+    <p class="section-subtitle">
+      Flujo completo: desde que llega una factura por email hasta que se contabiliza en Odoo, 
+      se genera el reporte y se notifica al proveedor. Todo sin intervención humana.
+    </p>
+
+    <div class="demo-wrapper">
+      <div class="pipeline" id="pipeline">
+        <div class="stage" data-stage="1">
+          <div class="stage-icon">📥</div>
+          <div class="stage-title">Recepción</div>
+          <div class="stage-desc">Email entrante</div>
+          <div class="stage-status" id="status-1">Esperando</div>
+        </div>
+
+        <div class="connector" data-connector="1">
+          <div class="particle" id="particle-1"></div>
+        </div>
+
+        <div class="stage" data-stage="2">
+          <div class="stage-icon">🔍</div>
+          <div class="stage-title">Extracción IA</div>
+          <div class="stage-desc">OCR + NLP</div>
+          <div class="stage-status" id="status-2">Esperando</div>
+        </div>
+
+        <div class="connector" data-connector="2">
+          <div class="particle" id="particle-2"></div>
+        </div>
+
+        <div class="stage" data-stage="3">
+          <div class="stage-icon">✅</div>
+          <div class="stage-title">Validación</div>
+          <div class="stage-desc">Reglas + Odoo</div>
+          <div class="stage-status" id="status-3">Esperando</div>
+        </div>
+
+        <div class="connector" data-connector="3">
+          <div class="particle" id="particle-3"></div>
+        </div>
+
+        <div class="stage" data-stage="4">
+          <div class="stage-icon">📊</div>
+          <div class="stage-title">Contabilización</div>
+          <div class="stage-desc">Odoo ERP</div>
+          <div class="stage-status" id="status-4">Esperando</div>
+        </div>
+
+        <div class="connector" data-connector="4">
+          <div class="particle" id="particle-4"></div>
+        </div>
+
+        <div class="stage" data-stage="5">
+          <div class="stage-icon">📬</div>
+          <div class="stage-title">Notificación</div>
+          <div class="stage-desc">Email + Dashboard</div>
+          <div class="stage-status" id="status-5">Esperando</div>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="panel-left">
+          <div class="info-card">
+            <h4>📄 Factura detectada</h4>
+            <div class="info-row"><span>Proveedor:</span><span class="hl" id="info-proveedor">—</span></div>
+            <div class="info-row"><span>RUC:</span><span class="hl" id="info-ruc">—</span></div>
+            <div class="info-row"><span>Monto:</span><span class="hl" id="info-monto">—</span></div>
+            <div class="info-row"><span>Concepto:</span><span class="hl" id="info-concepto">—</span></div>
+            <div class="info-row"><span>Confianza OCR:</span><span class="hl" id="info-confianza">—</span></div>
+          </div>
+          <div class="info-card">
+            <h4>📋 Resultado validación</h4>
+            <div class="info-row"><span>OC vinculada:</span><span class="hl" id="info-oc">—</span></div>
+            <div class="info-row"><span>Monto coincide:</span><span class="hl" id="info-coincide">—</span></div>
+            <div class="info-row"><span>Aprobación:</span><span class="hl" id="info-aprobacion">—</span></div>
+          </div>
+        </div>
+        <div class="panel-right">
+          <div class="log-card">
+            <h4>📝 Log en vivo</h4>
+            <div class="log-container" id="log-container">
+              <div class="log-entry info">Sistema iniciado. Esperando facturas...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-controls">
+        <button class="btn btn-primary" id="runDemoBtn">
+          ▶ Ejecutar demo completa
+        </button>
+        <button class="btn btn-outline" id="resetDemoBtn">
+          ↻ Reiniciar
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #demo {
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary) 100%);
+  }
+
+  .demo-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 32px;
+    padding: 24px 0;
+    position: relative;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    min-width: 120px;
+    transition: all 0.5s;
+    position: relative;
+    z-index: 2;
+  }
+
+  .stage.active {
+    border-color: var(--accent);
+    background: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+  }
+
+  .stage.done {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+  }
+
+  .stage-icon {
+    font-size: 2rem;
+  }
+
+  .stage-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .stage-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .stage-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    transition: color 0.3s;
+  }
+
+  .stage.active .stage-status {
+    color: var(--accent);
+    animation: pulse-text 1s ease-in-out infinite;
+  }
+
+  .stage.done .stage-status {
+    color: #22c55e;
+  }
+
+  @keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .connector {
+    width: 80px;
+    height: 4px;
+    background: var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .connector.active {
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+  }
+
+  .connector.done {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  }
+
+  .particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    top: -3px;
+    left: -10px;
+    opacity: 0;
+    z-index: 3;
+  }
+
+  .particle.animate {
+    opacity: 1;
+    animation: fly 2s ease-in-out forwards;
+  }
+
+  .particle.done {
+    opacity: 0;
+  }
+
+  @keyframes fly {
+    0% { left: -10px; }
+    100% { left: calc(100% - 0px); }
+  }
+
+  .demo-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .info-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .info-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-row .hl {
+    color: var(--text);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    transition: all 0.3s;
+  }
+
+  .info-row .hl.pop {
+    color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .log-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .log-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .log-container {
+    max-height: 140px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .log-container::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .log-container::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  .log-entry {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 2px solid transparent;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .log-entry.info {
+    border-left-color: var(--accent);
+    color: var(--text-secondary);
+  }
+
+  .log-entry.success {
+    border-left-color: #22c55e;
+    color: #22c55e;
+  }
+
+  .log-entry.warn {
+    border-left-color: #f59e0b;
+    color: #f59e0b;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .demo-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  @media (max-width: 1024px) {
+    .pipeline {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .stage {
+      min-width: 100px;
+      padding: 12px 16px;
+    }
+
+    .connector {
+      width: 40px;
+    }
+
+    .demo-panel {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .stage {
+      min-width: 80px;
+      padding: 8px 10px;
+    }
+
+    .stage-icon {
+      font-size: 1.5rem;
+    }
+
+    .stage-title {
+      font-size: 0.75rem;
+    }
+
+    .demo-wrapper {
+      padding: 20px;
+    }
+  }
+</style>
+
+<script>
+const proveedores = [
+  { nombre: 'TechSolutions S.A.C.', ruc: '20567890123', monto: '15,230.50', concepto: 'Servicios cloud Q4' },
+  { nombre: 'Distribuidora Norte S.A.', ruc: '20456789012', monto: '8,450.00', concepto: 'Insumos oficina' },
+  { nombre: 'Consultoría DataPro', ruc: '20678901234', monto: '22,180.00', concepto: 'Consultoría Odoo' },
+  { nombre: 'Logística Express EIRL', ruc: '20345678901', monto: '5,670.00', concepto: 'Flete mensual' },
+];
+
+let running = false;
+const log = document.getElementById('log-container');
+
+function addLog(message, type = 'info') {
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${type}`;
+  const now = new Date();
+  const time = now.toLocaleTimeString('es-PE', { hour12: false });
+  entry.textContent = `[${time}] ${message}`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+function getProveedor() {
+  return proveedores[Math.floor(Math.random() * proveedores.length)];
+}
+
+function setInfo(id, value) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.textContent = value;
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+}
+
+function setStageStatus(stage, status) {
+  const el = document.getElementById(`status-${stage}`);
+  if (el) el.textContent = status;
+}
+
+function activateStage(stage) {
+  const stageEl = document.querySelector(`[data-stage="${stage}"]`);
+  if (stageEl) {
+    stageEl.classList.remove('done');
+    stageEl.classList.add('active');
+  }
+  const connector = document.querySelector(`[data-connector="${stage}"]`);
+  if (connector) {
+    connector.classList.remove('done');
+    connector.classList.add('active');
+  }
+  if (stage > 1) {
+    const prevConnector = document.querySelector(`[data-connector="${stage - 1}"]`);
+    if (prevConnector) {
+      prevConnector.classList.remove('active');
+      prevConnector.classList.add('done');
+    }
+    const prevStage = document.querySelector(`[data-stage="${stage - 1}"]`);
+    if (prevStage) {
+      prevStage.classList.remove('active');
+      prevStage.classList.add('done');
+      const statusEl = document.getElementById(`status-${stage - 1}`);
+      if (statusEl) statusEl.textContent = '✓ Completado';
+    }
+  }
+}
+
+function completeAllStages() {
+  for (let i = 1; i <= 5; i++) {
+    const stageEl = document.querySelector(`[data-stage="${i}"]`);
+    if (stageEl) {
+      stageEl.classList.remove('active');
+      stageEl.classList.add('done');
+    }
+    const connector = document.querySelector(`[data-connector="${i}"]`);
+    if (connector) {
+      connector.classList.remove('active');
+      connector.classList.add('done');
+    }
+    const statusEl = document.getElementById(`status-${i}`);
+    if (statusEl) statusEl.textContent = '✓ Completado';
+  }
+}
+
+async function runDemo() {
+  if (running) return;
+  running = true;
+
+  document.getElementById('runDemoBtn').disabled = true;
+
+  // Reset
+  for (let i = 1; i <= 5; i++) {
+    const stageEl = document.querySelector(`[data-stage="${i}"]`);
+    if (stageEl) { stageEl.classList.remove('active', 'done'); }
+    const connector = document.querySelector(`[data-connector="${i}"]`);
+    if (connector) { connector.classList.remove('active', 'done'); }
+    setStageStatus(i, 'Esperando');
+  }
+  log.innerHTML = '';
+  setInfo('info-proveedor', '—');
+  setInfo('info-ruc', '—');
+  setInfo('info-monto', '—');
+  setInfo('info-concepto', '—');
+  setInfo('info-confianza', '—');
+  setInfo('info-oc', '—');
+  setInfo('info-coincide', '—');
+  setInfo('info-aprobacion', '—');
+
+  const prov = getProveedor();
+
+  // Stage 1: Recepción
+  activateStage(1);
+  setStageStatus(1, '📩 Detectando...');
+  addLog('Monitoreando buzón de facturación...', 'info');
+  await new Promise(r => setTimeout(r, 1200));
+  addLog(`📩 Factura detectada: ${prov.nombre}`, 'success');
+  addLog('Adjunto: FACT-2025-00421.pdf (4.2 MB)', 'info');
+  setStageStatus(1, '✓ Recibido');
+  addLog('Archivo extraído y almacenado en /inbox', 'info');
+
+  // Connector 1 → 2
+  const p1 = document.getElementById('particle-1');
+  p1.classList.remove('animate', 'done');
+  void p1.offsetWidth;
+  p1.classList.add('animate');
+  await new Promise(r => setTimeout(r, 1500));
+  p1.classList.remove('animate');
+  p1.classList.add('done');
+
+  // Stage 2: Extracción IA
+  activateStage(2);
+  setStageStatus(2, '🧠 Procesando...');
+  addLog('Iniciando pipeline de extracción IA...', 'info');
+  await new Promise(r => setTimeout(r, 800));
+  setInfo('info-proveedor', prov.nombre);
+  addLog(`Proveedor: ${prov.nombre}`, 'success');
+  await new Promise(r => setTimeout(r, 600));
+  setInfo('info-ruc', prov.ruc);
+  addLog(`RUC: ${prov.ruc}`, 'success');
+  await new Promise(r => setTimeout(r, 600));
+  setInfo('info-monto', `S/ ${prov.monto}`);
+  addLog(`Monto total: S/ ${prov.monto}`, 'success');
+  await new Promise(r => setTimeout(r, 600));
+  setInfo('info-concepto', prov.concepto);
+  addLog(`Concepto: ${prov.concepto}`, 'success');
+  await new Promise(r => setTimeout(r, 600));
+  setInfo('info-confianza', '97.3%');
+  addLog('Confianza OCR: 97.3% — umbral superado ✅', 'success');
+  setStageStatus(2, '✓ Extraído');
+  addLog('✅ Extracción completada en 2.3 segundos', 'success');
+
+  // Connector 2 → 3
+  const p2 = document.getElementById('particle-2');
+  p2.classList.remove('animate', 'done');
+  void p2.offsetWidth;
+  p2.classList.add('animate');
+  await new Promise(r => setTimeout(r, 1500));
+  p2.classList.remove('animate');
+  p2.classList.add('done');
+
+  // Stage 3: Validación
+  activateStage(3);
+  setStageStatus(3, '⚖️ Validando...');
+  addLog('Consultando Odoo: Purchase Order #OC-2025-0892...', 'info');
+  await new Promise(r => setTimeout(r, 1000));
+  setInfo('info-oc', 'OC-2025-0892');
+  addLog('OC-2025-0892 encontrada en Odoo ✅', 'success');
+  await new Promise(r => setTimeout(r, 800));
+  setInfo('info-coincide', '✅ S/ 15,230.50');
+  addLog('Monto coincide con OC: S/ 15,230.50 ✅', 'success');
+  await new Promise(r => setTimeout(r, 800));
+  setInfo('info-aprobacion', '✅ Automática');
+  addLog('Regla de aprobación: < S/ 25,000 → Auto-aprobada', 'success');
+  addLog('🚫 Sin discrepancias detectadas', 'success');
+  setStageStatus(3, '✓ Validado');
+
+  // Connector 3 → 4
+  const p3 = document.getElementById('particle-3');
+  p3.classList.remove('animate', 'done');
+  void p3.offsetWidth;
+  p3.classList.add('animate');
+  await new Promise(r => setTimeout(r, 1500));
+  p3.classList.remove('animate');
+  p3.classList.add('done');
+
+  // Stage 4: Contabilización
+  activateStage(4);
+  setStageStatus(4, '📊 Contabilizando...');
+  addLog('Creando asiento contable en Odoo...', 'info');
+  await new Promise(r => setTimeout(r, 1000));
+  addLog('Asiento #AS-2025-15342 creado', 'success');
+  addLog('   → Débito: Cuenta 42 (Proveedores)', 'info');
+  addLog('   → Crédito: Cuenta 10 (Caja/Bancos)', 'info');
+  await new Promise(r => setTimeout(r, 800));
+  addLog('Factura marcada como "Pagada" en Odoo', 'success');
+  await new Promise(r => setTimeout(r, 600));
+  addLog('Dashboard actualizado en tiempo real 📊', 'success');
+  setStageStatus(4, '✓ Contabilizado');
+
+  // Connector 4 → 5
+  const p4 = document.getElementById('particle-4');
+  p4.classList.remove('animate', 'done');
+  void p4.offsetWidth;
+  p4.classList.add('animate');
+  await new Promise(r => setTimeout(r, 1500));
+  p4.classList.remove('animate');
+  p4.classList.add('done');
+
+  // Stage 5: Notificación
+  activateStage(5);
+  setStageStatus(5, '📬 Notificando...');
+  addLog(`Enviando confirmación a ${prov.nombre}...`, 'info');
+  await new Promise(r => setTimeout(r, 1000));
+  addLog('📧 Email enviado: facturacion@techsolutions.pe', 'success');
+  addLog('   Asunto: "Factura F00421 — Pagada"', 'info');
+  await new Promise(r => setTimeout(r, 600));
+  addLog('Reporte PDF generado y adjuntado automáticamente', 'success');
+  await new Promise(r => setTimeout(r, 600));
+  addLog('📊 Dashboard en tiempo real actualizado', 'success');
+  setStageStatus(5, '✓ Completado');
+  addLog('🎯 Factura procesada en 18.4 segundos — Sin intervención humana', 'success');
+
+  // Complete visual
+  completeAllStages();
+  addLog('══════════════════════════════════', 'success');
+  addLog('🏁 CICLO COMPLETADO EXITOSAMENTE', 'success');
+  addLog('⏱️ Tiempo total: 18.4 segundos', 'success');
+  addLog('══════════════════════════════════', 'success');
+
+  running = false;
+  document.getElementById('runDemoBtn').disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('runDemoBtn').addEventListener('click', runDemo);
+  document.getElementById('resetDemoBtn').addEventListener('click', () => {
+    if (running) return;
+    for (let i = 1; i <= 5; i++) {
+      const stageEl = document.querySelector(`[data-stage="${i}"]`);
+      if (stageEl) { stageEl.classList.remove('active', 'done'); }
+      const connector = document.querySelector(`[data-connector="${i}"]`);
+      if (connector) { connector.classList.remove('active', 'done'); }
+      setStageStatus(i, 'Esperando');
+    }
+    log.innerHTML = '';
+    const entry = document.createElement('div');
+    entry.className = 'log-entry info';
+    entry.textContent = 'Sistema reinciado. Esperando facturas...';
+    log.appendChild(entry);
+    setInfo('info-proveedor', '—');
+    setInfo('info-ruc', '—');
+    setInfo('info-monto', '—');
+    setInfo('info-concepto', '—');
+    setInfo('info-confianza', '—');
+    setInfo('info-oc', '—');
+    setInfo('info-coincide', '—');
+    setInfo('info-aprobacion', '—');
+  });
+});
+</script>
