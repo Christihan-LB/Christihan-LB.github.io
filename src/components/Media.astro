@@ -1,0 +1,112 @@
+<section id="media">
+  <div class="container">
+    <span class="section-label">Demos & Media</span>
+    <h2 class="section-title">Proyectos en acción</h2>
+    <p class="section-subtitle">
+      Videos demonstrativos de robots, automatizaciones, ROS y más.
+    </p>
+    <div class="media-grid">
+      <div class="media-card">
+        <h3>Robot Bartender — Brazo Remoto</h3>
+        <p>Movimiento remoto de brazo robótico para preparación de Pisco Sour. ICMRE 2024 (IEEE).</p>
+        <video controls preload="metadata">
+          <source src="/videos/robot-bartender-brazo-remoto.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>Robot Pintor</h3>
+        <p>Robot capaz de pintar. Video acelerado 3x.</p>
+        <video controls preload="metadata">
+          <source src="/videos/robot-pintor.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>Reinforcement Learning — ROS</h3>
+        <p>Entrenamiento de agente RL en ROS Development Studio.</p>
+        <video controls preload="metadata">
+          <source src="/videos/reinforcement-learning-ros.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>Hangar de Drones — qAIRa</h3>
+        <p>Modelo de hangar automatizado para drones.</p>
+        <video controls preload="metadata">
+          <source src="/videos/qbox-hangar.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>Ensamble Hangar — qAIRa</h3>
+        <p>Ensamble final del hangar para drones de monitoreo.</p>
+        <video controls preload="metadata">
+          <source src="/videos/ensamble-hangar.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>Qhawax — Medidor Calidad del Aire</h3>
+        <p>Molde y ensamble del módulo de medición de calidad del aire (Patente INDECOPI).</p>
+        <video controls preload="metadata">
+          <source src="/videos/qhawax-molde.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="media-card">
+        <h3>SLAM — Summit Robot</h3>
+        <p>Generación de mapas con SLAM en robot Summit. Laboratorio GIT PUCP.</p>
+        <img src="/slam-summit.png" alt="SLAM Summit Map" loading="lazy" />
+      </div>
+      <div class="media-card">
+        <h3>QR Inventory — Drones</h3>
+        <p>Software de lectura de códigos QR para inventario automatizado con drones. qAIRa.</p>
+        <video controls preload="metadata">
+          <source src="/videos/qr-inventario-drones.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  .media-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .media-card:hover {
+    border-color: var(--accent);
+  }
+
+  .media-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .media-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .media-card video,
+  .media-card img {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+    background: #000;
+  }
+
+  @media (max-width: 768px) {
+    .media-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
