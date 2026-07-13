@@ -7,7 +7,7 @@
     </p>
     <div class="blog-list">
       <article class="blog-card">
-        <span class="blog-date">Julio 2026 · 10 min</span>
+        <span class="blog-date">Julio 2026 · 8 min</span>
         <h3>Automatizar la facturación SUNAT: cómo eliminamos 6 horas semanales de captura manual</h3>
         <div class="blog-content">
           <p>
@@ -18,106 +18,348 @@
             los tipea a Odoo, a Excel o al sistema de facturación. Y ahí se pierden horas y se generan errores.
           </p>
           <p>
-            Trabajé con una clínica en San Isidro que recibía ~350 facturas de proveedores al mes. 
-            Su proceso era: abrir cada PDF, copiar RUC, razón social, monto, IGV, fecha de emisión, 
-            y pegarlos en Odoo. Una factura les tomaba 2-3 minutos en promedio. Pero con facturas 
-            de múltiples ítems, o cuando el PDF venía escaneado (no digital), el tiempo se duplicaba. 
-            En total: ~6 horas semanales solo de captura. El error humano rondaba el 8%: montos 
-            mal tipeados, RUCs intercambiados, facturas que se "perdían" en la bandeja de entrada.
+            Este artículo describe el pipeline que construí para una clínica en San Isidro, 
+            explica cada componente técnico, las decisiones de diseño, los resultados después de 
+            3 meses de operación, y las lecciones que aplico en cada proyecto de automatización 
+            documental. Si tu empresa maneja más de 200 facturas de proveedores al mes, esto te 
+            interesa.
+          </p>
+
+          <h4>El problema real</h4>
+          <p>
+            La clínica recibía ~350 facturas de proveedores al mes. Su proceso era: la asistente 
+            contable abría cada PDF, copiaba RUC, razón social, monto, IGV, fecha de emisión y 
+            los pegaba manualmente en Odoo. Una factura simple le tomaba 2-3 minutos. Pero cuando 
+            el comprobante incluía múltiples ítems o el PDF era escaneado (una imagen, no texto 
+            seleccionable), el tiempo se duplicaba. En total, invertía ~6 horas semanales solo 
+            en captura.
           </p>
           <p>
-            Construí un pipeline automatizado en Python que funciona así: (1) un inbox de Gmail 
-            exclusivo para facturas recibe los PDFs automáticamente; (2) un script corre cada 5 minutos, 
-            descarga los adjuntos no leídos y los pasa por pdfplumber + OpenCV Tesseract para extraer 
-            texto; (3) un parser con reglas de negocio identifica los campos clave usando el formato 
-            estándar SUNAT (RUC emisor, serie, número, monto total, IGV, moneda, fecha); (4) los datos 
-            se validan contra el catálogo SUNAT (códigos de tributo, tipo de comprobante, monedas); 
-            (5) si todo está bien, se crea la factura en Odoo vía API y se archiva el PDF en el 
-            chatter del proveedor; (6) si algo no coincide, el caso se deriva a una bandeja de 
-            revisión manual con el PDF original y una explicación del error.
+            Además del tiempo, estaba el error humano. Medimos durante un mes: el 8% de las 
+            facturas ingresadas tenían al menos un error: montos mal tipeados, RUCs intercambiados, 
+            facturas que quedaban sin registrar porque el PDF se extraviaba en la bandeja de 
+            entrada. Cada error significaba una discrepancia contable que alguien tenía que 
+            detectar y corregir después — duplicando el trabajo.
           </p>
           <p>
-            El resultado después de 3 meses de operación: 0 horas de captura manual, tasa de error 
-            del 0.5% (todos los errores eran PDFs escaneados de baja calidad que requerían revisión 
-            manual), y un ahorro estimado de S/ 1,800 mensuales en horas del asistente contable. 
-            El pipeline corre en una VPS de $10/mes en DigitalOcean, con un script systemd que lo 
-            mantiene vivo. El desarrollo tomó 3 semanas, incluyendo pruebas con 2 meses de facturas 
-            históricas para validar el parser contra datos reales.
+            Este patrón se repite en casi todas las empresas peruanas con las que he trabajado. 
+            El cuello de botella no es la tecnología, es el proceso manual de transferencia de 
+            datos entre formatos. La SUNAT estandarizó el formato de los comprobantes electrónicos 
+            (XML + PDF dual), pero ese estándar no llega al ERP de la empresa. Ahí está el hueco 
+            que hay que cerrar.
+          </p>
+
+          <h4>La solución: pipeline de 6 etapas</h4>
+          <p>
+            Construí un pipeline automatizado en Python que procesa facturas desde que llegan por 
+            correo hasta que se registran en Odoo. No inventé nada nuevo — usé herramientas 
+            existentes y las conecté con reglas de negocio específicas para la realidad contable 
+            peruana. El pipeline tiene 6 etapas bien definidas:
           </p>
           <p>
-            La lección más importante: no necesitas IA sofisticada para esto. pdfplumber resuelve 
-            el 90% de los PDFs digitales. Solo cuando el PDF es escaneado (imagen) entra Tesseract 
-            OCR, y aun así el accuracy es ~92% con documentos SUNAT estándar. El valor no está en 
-            el modelo, está en las reglas de validación que reflejan cómo funciona realmente la 
-            contabilidad peruana. Si tu empresa emite más de 200 facturas al mes, esta automatización 
-            se paga sola en menos de 3 meses. Si quieres implementarlo, puedo compartir la 
-            arquitectura completa o adaptarla a tu ERP.
+            <strong>Etapa 1 — Recepción:</strong> La clínica abrió un correo Gmail exclusivo para 
+            facturas (facturas@clinica.pe). Todos los proveedores fueron reentrenados para enviar 
+            sus comprobantes ahí. Un script corre como un servicio systemd cada 5 minutos, se 
+            conecta vía Gmail API con OAuth 2.0, y descarga los adjuntos de los correos no leídos. 
+            Usamos etiquetas de Gmail para marcar los correos procesados y evitar reprocesarlos.
+          </p>
+          <p>
+            <strong>Etapa 2 — Extracción:</strong> Aquí hay dos caminos. Si el PDF es digital 
+            (tiene texto seleccionable), usamos pdfplumber, que extrae el texto con coordenadas 
+            precisas. Si el PDF es escaneado (imagen), entra OpenCV + Tesseract OCR para 
+            convertir la imagen a texto. La detección es automática: pdfplumber intenta extraer 
+            texto, y si el resultado tiene menos de 50 caracteres, asumimos que es escaneado y 
+            saltamos a OCR. En producción, el 70% de los PDFs eran digitales y el 30% escaneados. 
+            El OCR con Tesseract entrenado para español alcanza ~92% de precisión en caracteres 
+            con documentos SUNAT estándar.
+          </p>
+          <p>
+            <strong>Etapa 3 — Parseo:</strong> El texto extraído no sirve si no podemos identificar 
+            los campos. El formato de factura SUNAT tiene una estructura semi-estándar: el RUC del 
+            emisor aparece como "RUC: 20123456789", el monto total como "Total: S/ 1,234.56", 
+            el IGV como "IGV (18%): S/ 222.22". Usé expresiones regulares para cada campo, 
+            con validaciones cruzadas: por ejemplo, el monto total debe coincidir con la suma 
+            del subtotal más IGV (con tolerancia de S/ 1 por redondeo). El parser también 
+            identifica moneda (Soles o Dólares), tipo de comprobante (factura, boleta, nota 
+            de crédito), y serie-número correlativo.
+          </p>
+          <p>
+            <strong>Etapa 4 — Validación:</strong> Antes de crear la factura en Odoo, validamos 
+            los datos contra los catálogos oficiales de SUNAT. Verificamos que el RUC exista y 
+            esté activo (consulta a SUNAT vía API pública), que el tipo de comprobante sea 
+            válido, que la moneda esté en el catálogo 02, que el código de tributo (IGV, ISC) 
+            sea correcto. También validaciones de negocio: ¿el proveedor ya existe en Odoo? 
+            Si no, se crea automáticamente con los datos extraídos. ¿La factura ya fue registrada? 
+            Comparamos RUC + serie + número contra la base de datos para evitar duplicados.
+          </p>
+          <p>
+            <strong>Etapa 5 — Registro en Odoo:</strong> Con los datos validados, llamamos a la 
+            API de Odoo (xmlrpc, que es la interfaz más estable para integraciones externas) 
+            para crear la factura de proveedor. El PDF original se adjunta al chatter del 
+            registro mediante el modelo ir.attachment, vinculado al account.move creado. 
+            Si el proveedor tiene un plazo de pago configurado en Odoo, la fecha de vencimiento 
+            se calcula automáticamente.
+          </p>
+          <p>
+            <strong>Etapa 6 — Excepción:</strong> Si alguna etapa falla (OCR de baja calidad, 
+            validación contra SUNAT que no pasa, RUC no encontrado), la factura no se pierde. 
+            Se deriva a una bandeja de revisión manual: un dashboard simple en Streamlit donde 
+            la asistente ve el PDF original, el error detectado, y puede corregir los datos 
+            manualmente. Una vez corregidos, el registro en Odoo se completa. En producción, 
+            el 94% de las facturas pasan sin intervención; el 6% restante requiere revisión 
+            manual de menos de 30 segundos cada una.
+          </p>
+
+          <h4>Infraestructura y costos</h4>
+          <p>
+            El pipeline corre en una VPS de DigitalOcean de $10/mes (2GB RAM, 1 vCPU, 50GB SSD). 
+            El script principal está escrito en Python 3.11 con las librerías: pdfplumber, 
+            pytesseract, opencv-python, requests, y un módulo propio para la comunicación con 
+            Odoo vía xmlrpc. La base de datos de seguimiento (log de procesamiento, facturas 
+            procesadas, errores) usa SQLite. Programamos un cron con systemd timer que ejecuta 
+            el script cada 5 minutos. El consumo de CPU en pico es ~40%, y la memoria no supera 
+            los 500MB. El desarrollo completo tomó 3 semanas, incluyendo 2 semanas de pruebas 
+            con facturas históricas para ajustar el parser a las variaciones de formato entre 
+            diferentes emisores.
+          </p>
+
+          <h4>Resultados después de 3 meses</h4>
+          <p>
+            La captura manual se redujo a cero. La asistente contable ahora solo revisa la 
+            bandeja de excepciones (~20 facturas al mes) y dedica el tiempo ahorrado a tareas 
+            de análisis financiero que antes no podía hacer. La tasa de error bajó de 8% a 0.5% 
+            — todos los errores residuales son de facturas escaneadas con mala calidad donde 
+            el OCR no pudo leer algún dígito. El ahorro directo es de S/ 1,800 mensuales en 
+            horas del asistente contable, más el ahorro indirecto de no tener que corregir 
+            discrepancias contables. El pipeline ha procesado ~1,050 facturas en 3 meses con 
+            un uptime del 99.7%.
+          </p>
+
+          <h4>Lecciones aprendidas</h4>
+          <p>
+            <strong>No necesitas IA para automatizar.</strong> Hay una tendencia a pensar que 
+            todo necesita Machine Learning. pdfplumber resolvió el 90% del problema sin ningún 
+            modelo. El OCR (Tesseract) solo entra en casos específicos. La inteligencia real 
+            está en las reglas de validación que reflejan cómo funciona la contabilidad peruana.
+          </p>
+          <p>
+            <strong>El formato SUNAT no es tan estándar como parece.</strong> Cada emisor 
+            tiene variaciones: algunos ponen "RUC" y otros "R.U.C.", algunos usan "Monto 
+            Total" y otros "Total a Pagar". El parser tuvo que entrenarse con ~400 facturas 
+            reales de diferentes proveedores para cubrir las variaciones más comunes.
+          </p>
+          <p>
+            <strong>El 6% de excepción es aceptable.</strong> Intentar llegar a 100% de 
+            automatización habría requerido 3 meses más de desarrollo para ganar solo 6 
+            puntos porcentuales. La bandeja de revisión manual es una solución pragmática 
+            que mantiene el ROI alto.
+          </p>
+          <p>
+            <strong>El ROI se mide en semanas, no en años.</strong> Incluyendo desarrollo 
+            e infraestructura, el proyecto costó ~S/ 5,000. El ahorro mensual es de 
+            S/ 1,800. El retorno de inversión se alcanzó en menos de 3 meses.
           </p>
         </div>
         <span class="blog-tag">Automatización</span>
       </article>
 
       <article class="blog-card">
-        <span class="blog-date">Junio 2026 · 12 min</span>
+        <span class="blog-date">Junio 2026 · 10 min</span>
         <h3>Migración Odoo v13 → v18: 3 semanas, 60 módulos y 2.8M de registros después</h3>
         <div class="blog-content">
           <p>
-            En marzo de 2026 completé la migración de un cliente de Odoo 13 Enterprise a Odoo 18. 
-            No era una migración cualquiera: el cliente había acumulado 5 años de personalizaciones, 
-            módulos de terceros, procesos que "funcionaban pero nadie sabía cómo", y una base de 
-            datos con más de 2.8 millones de movimientos contables. El salto de v13 a v18 implica 
-            atravesar 5 versiones mayores, cada una con sus breaking changes, nuevos modelos y 
-            APIs deprecadas. La mala práctica más común en estas situaciones es migrar todo de 
-            golpe sin auditar. La correcta es auditar, limpiar y migrar en capas.
+            En marzo de 2026 completé la migración de un cliente de Odoo 13 Enterprise a 
+            Odoo 18. No era una migración cualquiera: el cliente había acumulado 5 años de 
+            personalizaciones, módulos de terceros, procesos que "funcionaban pero nadie 
+            sabía cómo", y una base de datos con más de 2.8 millones de movimientos contables. 
+            El salto de v13 a v18 implica atravesar 5 versiones mayores, cada una con sus 
+            breaking changes, nuevos modelos y APIs deprecadas. La mala práctica más común 
+            es migrar todo de golpe sin auditar. La correcta es auditar, limpiar y migrar 
+            en capas. Este artículo detalla las 4 fases del proyecto, las decisiones técnicas 
+            y los resultados.
+          </p>
+
+          <h4>Fase 1: Auditoría de módulos y alcance (5 días)</h4>
+          <p>
+            Antes de migrar un solo dato, necesitábamos saber qué estábamos migrando. 
+            Levantamos todos los módulos instalados en producción: 60 en total. La 
+            clasificación fue reveladora:
           </p>
           <p>
-            <strong>Fase 1: Auditoría (5 días).</strong> Levantamos todos los módulos instalados: 
-            ~60 en total. De esos, 12 eran módulos Odoo estándar, 28 eran de OCA, 12 eran 
-            personalizados por diferentes implementadores, y 8 eran de terceros (apps compradas). 
-            Revisamos cada módulo contra tres criterios: (1) ¿sigue en uso activo? (2) ¿tiene 
-            versión para v18? (3) ¿podemos reemplazarlo con funcionalidad estándar de v18? 
-            El resultado: solo 32 módulos sobrevivieron. Los otros 28 se eliminaron — algunos 
-            porque no se usaban desde 2022 (lo confirmamos con logs de acceso), otros porque 
-            v18 ya incluía la funcionalidad nativamente (account_reports, stock_sms, mail_activity_plan).
+            <strong>12 módulos Odoo estándar</strong> (account, sale, stock, purchase, 
+            mrp, hr, project, mail, calendar, web, base, portal). De estos, la mayoría 
+            no presentaba problemas porque Odoo mantiene rutas de migración oficiales.
           </p>
           <p>
-            <strong>Fase 2: Limpieza de datos (3 días).</strong> Encontramos de todo: 1,200 
-            productos creados en 2020 con costo cero que nunca se movieron, 4,500 contactos 
-            duplicados (mismo RUC, diferente razón social), 87 órdenes de compra en estado 
-            "borrador" de 2019, workflows de aprobación incompletos, y 34 impuestos configurados 
-            pero solo 5 en uso. Limpiamos todo antes de migrar porque los datos sucios se 
-            multiplican: un producto huérfano en v13 es un registro que arrastras a v18, 
-            ocupa espacio en tablas de búsqueda, genera ruido en reportes, y eventualmente 
-            causa bugs. La limpieza preventiva nos ahorró dolores de cabeza en el testing.
+            <strong>28 módulos de OCA</strong> (Odoo Community Association). Aquí la 
+            situación era mixta: algunos como account_reports y stock_sms ya estaban 
+            incorporados en el core de v18, otros tenían versiones mantenidas en sus 
+            ramas correspondientes, y unos pocos habían sido reemplazados por módulos 
+            más modernos.
           </p>
           <p>
-            <strong>Fase 3: Migración técnica (8 días).</strong> Usamos OpenUpgrade para el 
-            core, pero los módulos personalizados requirieron revisión uno por uno. La tabla 
-            más pesada (account_move_line) con 2.8M de registros se migró en 45 minutos — 
-            el cuello de botella no fue PostgreSQL sino la memoria disponible en el servidor 
-            de migración. Subir la instancia de 2GB a 4GB RAM redujo el tiempo total de 
-            migración de 4 horas a 1.5 horas. Los módulos OCA se actualizaron a sus ramas 
-            v18. Los personalizados se reescribieron usando la nueva API de Odoo 18 
-            (record rules con expresiones en vez de domain, onchange reemplazados por 
-            computed dependables, reportes QWeb con la nueva sintaxis).
+            <strong>12 módulos personalizados</strong> por diferentes implementadores 
+            a lo largo de los años. Cada uno con su propio estilo de código, nivel de 
+            documentación (de nula a mínima) y calidad variable. Algunos ni siquiera 
+            tenían autor identificado en los manifest.
           </p>
           <p>
-            <strong>Fase 4: Testing y puesta en producción (5 días).</strong> Probamos con 
-            un dump anonimizado de producción. El cliente asignó a su contadora principal 
-            y al jefe de almacén para validar cada proceso crítico: facturación, inventario, 
-            compras, contabilidad. Encontramos 14 bugs en total; 12 se corrigieron antes del 
-            corte, 2 eran features que no existían en v18 y se resolvieron con módulos ligeros. 
-            El corte se hizo un viernes a las 6pm. El lunes siguiente el cliente operaba 
-            normalmente en v18.
+            <strong>8 módulos de terceros</strong> adquiridos en Odoo Apps Store. 
+            Verificamos si el editor ofrecía versión para v18 y si nuestro contrato 
+            de mantenimiento cubría la actualización.
           </p>
           <p>
-            El aprendizaje más valioso de todo el proceso: la migración no es un problema 
-            técnico, es un problema de negocio. Cada módulo que sobrevive hay que justificarlo 
-            con el cliente. Si no se usa, se elimina. Si se usa poco, se evalúa si realmente 
-            vale la pena migrarlo. El resultado final fue un ERP más rápido, con menos módulos, 
-            más seguro, y con un equipo interno capacitado en la nueva versión. Para el cliente, 
-            el beneficio más concreto fue dejar de pagar mantenimiento por módulos legacy que 
-            ya no necesitaban.
+            Evaluamos cada módulo contra tres criterios: (1) ¿sigue en uso activo? 
+            Revisamos logs de acceso, consultamos a los usuarios clave, y verificamos 
+            si los datos asociados tenían actividad reciente. (2) ¿tiene versión 
+            disponible para v18? Si no, ¿podemos migrarlo nosotros o necesitamos 
+            reemplazarlo? (3) ¿podemos reemplazarlo con funcionalidad estándar de 
+            v18? Muchos módulos personalizados resolvían problemas que Odoo ya 
+            solucionó en versiones posteriores.
+          </p>
+          <p>
+            El resultado: solo 32 módulos sobrevivieron al filtro. Los otros 28 se 
+            eliminaron. Algunos ejemplos concretos: un módulo de reportes de inventario 
+            que no se usaba desde 2022 (confirmado con logs), un módulo de aprobación 
+            de gastos que v18 reemplaza con su flujo nativo, y tres módulos OCA que 
+            habían sido superados por la evolución del core. Esta limpieza inicial 
+            redujo el trabajo de migración en casi un 50%.
+          </p>
+
+          <h4>Fase 2: Limpieza de datos (3 días)</h4>
+          <p>
+            Los datos sucios son el enemigo silencioso de cualquier migración. Encontramos 
+            casos que ilustran por qué esta fase es crítica:
+          </p>
+          <p>
+            <strong>1,200 productos</strong> creados en 2020 con costo cero y stock cero 
+            que nunca registraron un movimiento. Eran productos fantasma, probablemente 
+            importaciones masivas de un archivo Excel que nunca se depuraron. En v13 
+            ocupaban espacio en tablas de búsqueda; en v18 seguirían ocupándolo y 
+            además ralentizarían las vistas de producto.
+          </p>
+          <p>
+            <strong>4,500 contactos duplicados</strong> identificados por RUC repetido 
+            pero con diferente razón social (ej: "Clínica San Pablo S.A.C." vs 
+            "CLINICA SAN PABLO SAC"). Unificamos usando el RUC como clave primaria 
+            y conservando el contacto con más actividad reciente.
+          </p>
+          <p>
+            <strong>87 órdenes de compra</strong> en estado "borrador" con fecha de 2019. 
+            Eran pedidos que nunca se confirmaron pero quedaron huérfanos en el sistema. 
+            Se cancelaron y archivaron.
+          </p>
+          <p>
+            <strong>34 impuestos configurados</strong> en el plan contable, pero solo 5 
+            en uso activo. Los impuestos no utilizados se desactivaron para evitar 
+            confusiones en la migración.
+          </p>
+          <p>
+            La limpieza nos tomó 3 días y probablemente nos ahorró 2 semanas de debugging 
+            en fases posteriores. La regla que aplico ahora en cada migración: limpia 
+            antes de migrar, no después. Un registro basura en v13 se multiplica en v18 
+            porque los nuevos modelos tienen relaciones más estrictas y validaciones 
+            más rigurosas.
+          </p>
+
+          <h4>Fase 3: Migración técnica (8 días)</h4>
+          <p>
+            Con los módulos definidos y los datos limpios, comenzó la migración técnica. 
+            Usamos la siguiente estrategia:
+          </p>
+          <p>
+            <strong>Core y módulos Odoo:</strong> OpenUpgrade fue la herramienta principal. 
+            Ejecutamos scripts de pre-migración para detectar inconsistencias (registros 
+            huérfanos, relaciones rotas) antes de la migración principal. La tabla 
+            account_move_line, con 2.8 millones de registros, fue la más pesada: la 
+            migración tomó 45 minutos. Descubrimos que el cuello de botella no era 
+            PostgreSQL (CPU al 60%), sino la memoria RAM del servidor de migración. 
+            Pasamos de 2GB a 4GB y el tiempo total de migración bajó de 4 horas a 
+            1.5 horas.
+          </p>
+          <p>
+            <strong>Módulos OCA:</strong> Para los que tenían versión en su rama v18, 
+            simplemente cambiamos la rama del repositorio y ejecutamos la migración 
+            estándar. Para los que no tenían versión, buscamos alternativas en OCA o 
+            los reemplazamos con funcionalidad core.
+          </p>
+          <p>
+            <strong>Módulos personalizados:</strong> Aquí estuvo el trabajo real. 
+            Tuvimos que reescribir varios componentes porque la API de Odoo cambió 
+            significativamente entre v13 y v18. Los cambios más relevantes:
+          </p>
+          <p>
+            — Los onchange() fueron reemplazados por computed dependables con 
+            @api.depends. El código se volvió más declarativo y predecible.
+          </p>
+          <p>
+            — Las vistas QWeb heredadas requerían actualización porque la sintaxis 
+            de xpath cambió. Los reportes en formato viejo (webkit) dejaron de 
+            funcionar y tuvieron que convertirse al nuevo motor de QWeb.
+          </p>
+          <p>
+            — Los record rules en v18 permiten expresiones en lugar de solo domains. 
+            Esto cambió la lógica de seguridad de varios módulos.
+          </p>
+          <p>
+            — Los widgets de JavaScript (OWL) reemplazaron a los viejos widgets 
+            basados en jQuery. Los módulos con personalización frontend requirieron 
+            reescritura parcial.
+          </p>
+
+          <h4>Fase 4: Testing y puesta en producción (5 días)</h4>
+          <p>
+            Probamos con un dump anonimizado de producción (se reemplazaron nombres reales, 
+            RUCs y montos, pero se mantuvo la estructura y volumen de datos). El cliente 
+            asignó a dos personas clave para la validación: la contadora principal y el 
+            jefe de almacén. Su criterio era simple: "si algo se ve diferente o no funciona 
+            como antes, lo reportamos". Probaron 4 procesos críticos:
+          </p>
+          <p>
+            — <strong>Facturación:</strong> crear, enviar, registrar pago y cancelar 
+            facturas. Tanto de venta como de compra.
+          </p>
+          <p>
+            — <strong>Inventario:</strong> recepción de mercadería, transferencias entre 
+            almacenes, inventario cíclico y ajustes.
+          </p>
+          <p>
+            — <strong>Compras:</strong> solicitud de cotización, orden de compra, 
+            recepción y facturación de proveedor.
+          </p>
+          <p>
+            — <strong>Contabilidad:</strong> asientos contables, cierre de mes, 
+            reportes financieros y conciliación bancaria.
+          </p>
+          <p>
+            Encontramos 14 bugs en total. 12 se corrigieron antes del corte: problemas 
+            de herencia de vistas, un campo computed que no se recalculaba correctamente, 
+            y algunos reportes con formato incorrecto. Los 2 restantes eran features que 
+            existían en v13 pero Odoo no incluyó en v18 (un reporte personalizado de 
+            utilidad por producto y un flujo de aprobación multicompra). Se resolvieron 
+            con módulos ligeros que implementaban la funcionalidad faltante.
+          </p>
+          <p>
+            El corte se programó un viernes a las 6:00 PM. Detuvimos el servidor de 
+            producción, hicimos el backup final, ejecutamos la migración, y abrimos 
+            el servidor de v18 a las 10:30 PM. El sábado y domingo se usaron para 
+            pruebas adicionales con los usuarios clave. El lunes siguiente el cliente 
+            operaba normalmente en v18.
+          </p>
+
+          <h4>Resultados y aprendizajes</h4>
+          <p>
+            El ERP migrado quedó más rápido, con menos módulos, más seguro, y con un 
+            equipo interno capacitado en la nueva versión. Para el cliente, el beneficio 
+            más concreto fue dejar de pagar mantenimiento por módulos legacy que ya no 
+            necesitaban (ahorro de ~$300/mes en suscripciones innecesarias).
+          </p>
+          <p>
+            La lección más importante: la migración no es un problema técnico, es un 
+            problema de negocio. Cada módulo que sobrevive hay que justificarlo con el 
+            cliente. Si no se usa, se elimina. Si se usa poco, se evalúa si realmente 
+            vale la pena migrarlo. El trabajo técnico es la parte fácil; lo difícil es 
+            tener la disciplina de auditar y limpiar antes de migrar.
           </p>
         </div>
         <span class="blog-tag">Odoo</span>
@@ -128,61 +370,170 @@
         <h3>Automatización sin código: 3 procesos que cualquier PYME peruana puede delegar hoy</h3>
         <div class="blog-content">
           <p>
-            "No tenemos área de sistemas" es la frase que más escucho en mi consultoría con 
-            empresas peruanas. La asumen como una limitación, como si la automatización 
-            solo fuera posible con un equipo de ingenieros. La realidad es muy distinta: 
-            con herramientas visuales como n8n, Make.com y Google Apps Script, cualquier 
-            empresa puede automatizar procesos sin escribir una línea de código. He visto 
-            a colegios, clínicas, estudios de abogados y distribuidoras implementar 
-            automatizaciones que les ahorran 10+ horas semanales, todo sin contratar 
-            un solo desarrollador.
+            "No tenemos área de sistemas" es la frase que más escucho en mi consultoría 
+            con empresas peruanas. La asumen como una limitación, como si la automatización 
+            solo fuera posible con un equipo de ingenieros. La realidad es muy distinta: con 
+            herramientas visuales como n8n, Make.com y Google Apps Script, cualquier empresa 
+            puede automatizar procesos sin escribir una línea de código. He visto a colegios, 
+            clínicas, estudios de abogados y distribuidoras implementar automatizaciones que 
+            les ahorran 10+ horas semanales, todo sin contratar un solo desarrollador.
           </p>
           <p>
-            <strong>Caso 1: Estudio de abogados en Miraflores.</strong> Recibían ~80 notificaciones 
-            judiciales por correo electrónico al mes. El proceso era: la asistente abría cada 
-            correo, identificaba el tipo de notificación, determinaba qué abogado debía atenderlo 
-            (según especialidad y carga laboral), reenviaba el correo con instrucciones, y 
-            archivaba el PDF en la carpeta del caso en Google Drive. Tiempo por notificación: 
-            5-7 minutos. Total mensual: ~8 horas. Diseñé un workflow en n8n con tres nodos: 
-            (1) trigger de Gmail que detecta correos con asunto que contiene "Notificación" 
-            o "Resolución"; (2) clasificador basado en palabras clave que asigna el caso al 
-            abogado correspondiente (penal, civil, laboral, corporativo); (3) acción que envía 
-            un WhatsApp con el resumen vía WhatsApp Business API y guarda el PDF en la carpeta 
-            de Drive correspondiente. El abogado recibe el mensaje directo y decide si 
-            necesita revisar el PDF completo. Resultado: 0 horas de intermediación, 
-            respuesta en minutos en vez de horas, y cero notificaciones perdidas.
+            Este artículo describe 3 casos reales en los que trabajé, con el problema, la 
+            solución técnica (en lenguaje simple) y los resultados medibles. Al final, 
+            propongo un marco para que identifiques los procesos automatizables en tu 
+            propia empresa.
+          </p>
+
+          <h4>Caso 1: Estudio de abogados en Miraflores — notificaciones judiciales</h4>
+          <p>
+            <strong>El problema:</strong> Un estudio con 8 abogados recibía ~80 notificaciones 
+            judiciales electrónicas al mes. El proceso manual era: la asistente abría cada 
+            correo, leía el asunto para identificar el tipo de notificación (notificación 
+            simple, resolución, cédula, oficio), determinaba qué abogado debía atenderlo 
+            según la especialidad (penal, civil, laboral, corporativo) y la carga laboral 
+            actual, reenviaba el correo con instrucciones, y archivaba manualmente el PDF 
+            en la carpeta de Google Drive del caso correspondiente.
           </p>
           <p>
-            <strong>Caso 2: Colegio privado en San Miguel.</strong> Enviaban reportes de notas 
-            a los padres cada bimestre. El proceso: descargar Excel del SIAGIE, formatearlo 
-            manualmente en Word, imprimir 600 copias, doblar, meter en sobre y entregar al 
-            alumno. Perdían 3 días completos de trabajo administrativo. Automatizamos con 
-            Google Apps Script conectado a Google Sheets: los datos del SIAGIE se vuelcan a 
-            una hoja de cálculo, un script genera un PDF personalizado por alumno con 
-            OpenTBS (plantilla Docx con variables), y se envía por correo a los padres 
-            desde un Gmail corporativo. El colegio pasó de 3 días a 45 minutos de trabajo 
-            automatizado. El sistema está corriendo hace 6 bimestres sin intervención manual.
+            Este proceso le tomaba a la asistente 5-7 minutos por notificación. En un mes 
+            de ~80 notificaciones, eso significaba entre 6.5 y 9 horas de trabajo puramente 
+            administrativo. Pero además, había errores: notificaciones que llegaban al 
+            abogado equivocado, PDFs que se guardaban en la carpeta incorrecta, y en 
+            casos extremos, notificaciones que pasaban desapercibidas porque el correo 
+            se perdía en la bandeja de entrada.
           </p>
           <p>
-            <strong>Caso 3: Distribuidora de alimentos en Surco.</strong> Su problema era 
-            la conciliación bancaria. Recibían ~120 pagos diarios (transferencias, Yape, 
-            POS), y su asistente contable pasaba 2 horas cada tarde cruzando el extracto 
-            bancario contra las facturas emitidas en Odoo. Si algo no cuadraba, tenía que 
-            revisar manualmente cada factura. Conectamos Odoo + n8n + la API del BCP. 
-            Ahora todas las noches un workflow descarga el extracto del día, lo cruza con 
-            las facturas en estado "Esperando pago", y concilia automáticamente cuando el 
-            monto y el RUC coinciden. Las discrepancias (montos parciales, pagos sin 
-            identificar) se envían a un canal de Slack donde la contadora revisa en 
-            vez de buscar. Tiempo ahorrado: ~10 horas/semana.
+            <strong>La solución:</strong> Diseñé un workflow en n8n con tres nodos 
+            principales. El primer nodo es un trigger de Gmail (vía webhook) que monitorea 
+            la bandeja de entrada etiquetando correos cuyo asunto contenga palabras clave 
+            como "Notificación", "Resolución", "Cédula" u "Oficio". El segundo nodo es un 
+            clasificador basado en reglas: si el asunto contiene "penal" o "Juzgado Penal", 
+            asigna al abogado A; si contiene "laboral", al abogado B, y así sucesivamente. 
+            También considera la carga laboral (un contador simple de casos activos por 
+            abogado). El tercer nodo ejecuta dos acciones: envía un WhatsApp con el 
+            resumen del caso y un enlace al PDF (usando WhatsApp Business API a través 
+            de un proveedor local como WATI o Meta Cloud API), y guarda el PDF en la 
+            carpeta de Google Drive del caso (creando la carpeta si no existe, usando 
+            el nombre del caso extraído del asunto del correo).
           </p>
           <p>
-            La regla que aplico en estos proyectos: si un proceso se puede describir con 
-            "cuando pasa X, haz Y", entonces se puede automatizar. No importa si X es 
-            un correo, un webhook, un archivo nuevo en Drive o un mensaje de WhatsApp. 
-            Las herramientas existen, son accesibles y no requieren programación. El 
-            trabajo real está en identificar esos procesos dentro de tu empresa. Si 
-            quieres, puedo hacer un diagnóstico gratuito de 30 minutos para encontrar 
-            los tres procesos más automatizables de tu empresa.
+            <strong>El resultado:</strong> La asistente pasó de intermediaria a supervisora. 
+            Ya no toca cada notificación, solo revisa el log de procesamiento (5 minutos 
+            al día). El tiempo de respuesta bajó de horas a minutos: cuando llega una 
+            notificación, el abogado recibe el WhatsApp en menos de 2 minutos. En 6 meses 
+            de operación, cero notificaciones perdidas y cero asignaciones incorrectas.
+          </p>
+
+          <h4>Caso 2: Colegio privado en San Miguel — reportes de notas bimestrales</h4>
+          <p>
+            <strong>El problema:</strong> Cada bimestre, el colegio enviaba reportes de 
+            notas a los padres de ~600 alumnos. El proceso era una cadena de tareas manuales 
+            que involucraba a 3 personas y tomaba 3 días completos: descargar las notas 
+            desde el SIAGIE (Sistema de Información de Apoyo a la Gestión de la Institución 
+            Educativa, del Ministerio de Educación), exportarlas a Excel, formatear el 
+            archivo manualmente para que coincidiera con la plantilla del colegio, imprimir 
+            600 copias en hojas membretadas, doblar cada una, meterlas en sobres con el 
+            nombre del alumno, y entregarlas al alumno para que las lleve a casa.
+          </p>
+          <p>
+            Además del tiempo, el proceso generaba errores: padres que recibían el reporte 
+            de otro hijo, sobres mal rotulados, y alumnos que "perdían" el reporte en el 
+            camino. El colegio estimaba que el 5% de los reportes tenían que reimprimirse 
+            por algún error.
+          </p>
+          <p>
+            <strong>La solución:</strong> Automatizamos con Google Apps Script, que se 
+            integra nativamente con el ecosistema Google Workspace (el colegio usaba 
+            Gmail corporativo y Google Drive). El flujo es: la administradora descarga 
+            el Excel del SIAGIE y lo pega en una hoja de cálculo de Google Sheets 
+            compartida. Un script (programado con un trigger basado en tiempo) detecta 
+            los datos nuevos y ejecuta las siguientes acciones: (1) toma los datos de 
+            cada alumno (nombre, curso, notas en cada competencia, promedio, comentario 
+            del tutor); (2) los inserta en una plantilla de Google Docs pre-diseñada 
+            con marcadores de posición (usando el método replaceText de Google Docs API); 
+            (3) exporta el documento a PDF; (4) envía el PDF por correo electrónico al 
+            padre/madre registrado en el SIAGIE, con copia al tutor del alumno.
+          </p>
+          <p>
+            <strong>El resultado:</strong> El proceso que tomaba 3 días ahora toma 45 
+            minutos. La administradora solo pega los datos en la hoja de cálculo y 
+            presiona un botón. El script se encarga de todo lo demás. El colegio ha 
+            usado el sistema durante 6 bimestres consecutivos sin una sola falla. 
+            Los padres reciben el reporte por correo y pueden archivarlo digitalmente. 
+            El colegio ahorra S/ 300 bimestrales en papel e impresión.
+          </p>
+
+          <h4>Caso 3: Distribuidora de alimentos en Surco — conciliación bancaria</h4>
+          <p>
+            <strong>El problema:</strong> Una distribuidora de alimentos recibía ~120 
+            pagos diarios por diversos canales: transferencias bancarias, Yape, POS 
+            (Visa/Mastercard) y efectivo. Su asistente contable pasaba 2 horas cada 
+            tarde cruzando manualmente el extracto bancario contra las facturas emitidas 
+            en Odoo. Cuando un pago no coincidía exactamente con una factura (un cliente 
+            pagaba dos facturas juntas, o pagaba un monto parcial), tenía que buscar 
+            manualmente en el sistema, revisar correos, y llamar al cliente para 
+            identificar el pago. Esto añadía horas adicionales y retrasaba la 
+            conciliación hasta 3 días después del cierre del mes.
+          </p>
+          <p>
+            <strong>La solución:</strong> Conectamos tres sistemas: Odoo (facturación y 
+            contabilidad), el portal de servicios del BCP (banco principal de la empresa) 
+            y n8n como orquestador. El workflow nocturno (programado a las 10 PM) hace 
+            lo siguiente: (1) se conecta al portal del BCP vía API (usando las credenciales 
+            proporcionadas por el banco) y descarga el extracto del día en formato CSV; 
+            (2) consulta a Odoo todas las facturas en estado "Esperando pago" con fecha 
+            de emisión hasta el día actual; (3) cruza cada movimiento bancario contra 
+            las facturas usando dos criterios: monto exacto y RUC del cliente; (4) si 
+            encuentra una coincidencia perfecta, crea el asiento de pago en Odoo y 
+            concilia automáticamente; (5) si un pago no coincide con ninguna factura 
+            (pago parcial, pago agrupado, o pago no identificado), lo envía a un canal 
+            de Slack donde la contadora revisa y resuelve manualmente.
+          </p>
+          <p>
+            <strong>El resultado:</strong> La conciliación diaria pasó de 2 horas a 5 
+            minutos de supervisión. La contadora solo revisa las excepciones (~15% de 
+            los pagos, principalmente por pagos agrupados). El cierre de mes ahora se 
+            completa el primer día hábil, no al tercero. La distribuidora implementó 
+            el sistema en enero de 2025 y desde entonces ha conciliado más de 25,000 
+            transacciones automáticamente con una tasa de acierto del 97%.
+          </p>
+
+          <h4>El marco: cómo identificar procesos automatizables</h4>
+          <p>
+            Después de trabajar en más de 20 proyectos de automatización para empresas 
+            peruanas, he identificado un patrón común: los mejores candidatos para 
+            automatizar son procesos que cumplen con estas 4 características:
+          </p>
+          <p>
+            <strong>1. Son repetitivos.</strong> Si haces lo mismo más de una vez al 
+            día, es automatizable. Si lo haces una vez a la semana, también. Si lo 
+            haces una vez al año, probablemente no vale la pena.
+          </p>
+          <p>
+            <strong>2. Tienen reglas claras.</strong> La automatización funciona cuando 
+            puedes describir el proceso con "si X, entonces Y". Si necesitas juicio 
+            humano o interpretación subjetiva, la automatización se vuelve compleja.
+          </p>
+          <p>
+            <strong>3. Conectan sistemas.</strong> La mayoría de los procesos manuales 
+            existen porque los datos están atrapados en un sistema y necesitan moverse 
+            a otro. Un PDF que hay que pasar a Excel, un correo que hay que convertir 
+            en un ticket, un formulario que hay que registrar en una base de datos. 
+            Ahí es donde la automatización aporta más valor.
+          </p>
+          <p>
+            <strong>4. Tienen un costo medible.</strong> Si puedes calcular cuánto 
+            tiempo (y dinero) pierdes en un proceso manual, puedes calcular el ROI 
+            de automatizarlo. Si el ahorro mensual supera el costo de implementación 
+            en menos de 6 meses, el proyecto es viable.
+          </p>
+          <p>
+            No todo necesita Inteligencia Artificial. A veces una integración bien 
+            hecha de APIs existentes es más valiosa que un modelo de Machine Learning. 
+            El trabajo real está en identificar esos procesos dentro de tu empresa. 
+            Si quieres, puedo hacer un diagnóstico gratuito de 30 minutos para 
+            encontrar los tres procesos más automatizables de tu negocio. 
           </p>
         </div>
         <span class="blog-tag">Productividad</span>
@@ -195,7 +546,7 @@
   .blog-list {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 32px;
     max-width: 860px;
     margin: 0 auto;
   }
@@ -204,7 +555,7 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 36px 32px;
+    padding: 40px 36px;
     transition: all 0.3s;
     cursor: default;
   }
@@ -222,21 +573,32 @@
   }
 
   .blog-card h3 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin: 12px 0 18px;
-    line-height: 1.35;
+    margin: 12px 0 20px;
+    line-height: 1.4;
+  }
+
+  .blog-content h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 24px 0 12px;
+    color: var(--text-primary);
   }
 
   .blog-content p {
     font-size: 0.92rem;
     color: var(--text-secondary);
-    line-height: 1.7;
+    line-height: 1.75;
     margin-bottom: 16px;
   }
 
   .blog-content p:last-of-type {
     margin-bottom: 20px;
+  }
+
+  .blog-content strong {
+    color: var(--text-primary);
   }
 
   .blog-tag {
@@ -249,17 +611,13 @@
     font-family: var(--font-mono);
   }
 
-  .blog-content strong {
-    color: var(--text-primary);
-  }
-
   @media (max-width: 640px) {
     .blog-card {
       padding: 24px 20px;
     }
 
     .blog-card h3 {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
     }
   }
 </style>
