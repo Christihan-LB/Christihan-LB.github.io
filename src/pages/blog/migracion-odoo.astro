@@ -1,0 +1,136 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Base title="Migración Odoo v13 a v18 — Christihan Laurel" description="Migración real de Odoo 13 Enterprise a 18: 60 módulos auditados, 2.8M registros migrados, 4 fases documentadas. Lecciones de 3 semanas de proyecto.">
+  <Header />
+  <main class="article-page">
+    <div class="container article-container">
+      <a href="/#blog" class="back-link">← Volver al blog</a>
+      <span class="article-tag">Odoo</span>
+      <h1>Migración Odoo v13 → v18: 3 semanas, 60 módulos y 2.8M de registros después</h1>
+      <div class="article-meta">Junio 2026 · 7 min de lectura</div>
+
+      <div class="article-content">
+        <p>
+          En marzo de 2026 completé la migración de un cliente de Odoo 13 Enterprise a 
+          Odoo 18. No era una migración cualquiera: el cliente había acumulado 5 años de 
+          personalizaciones, módulos de terceros, procesos que "funcionaban pero nadie 
+          sabía cómo", y una base de datos con más de 2.8 millones de movimientos contables. 
+          El salto de v13 a v18 implica atravesar 5 versiones mayores, cada una con sus 
+          breaking changes, nuevos modelos y APIs deprecadas. La mala práctica más común 
+          en estas situaciones es migrar todo de golpe sin auditar. La correcta es auditar, 
+          limpiar y migrar en capas. Este artículo detalla las 4 fases del proyecto, las decisiones 
+          técnicas y los resultados.
+        </p>
+
+        <div class="article-stats">
+          <div class="a-stat"><span class="a-stat-value">60</span><span class="a-stat-label">módulos auditados</span></div>
+          <div class="a-stat"><span class="a-stat-value">28</span><span class="a-stat-label">módulos eliminados</span></div>
+          <div class="a-stat"><span class="a-stat-value">2.8M</span><span class="a-stat-label">registros migrados</span></div>
+        </div>
+
+        <h2>Fase 1: Auditoría de módulos y alcance (5 días)</h2>
+        <p>
+          Antes de migrar un solo dato, necesitábamos saber qué estábamos migrando. 
+          Levantamos todos los módulos instalados en producción: 60 en total. 
+        </p>
+        <p><strong>12 módulos Odoo estándar</strong> (account, sale, stock, purchase, mrp, hr, project, mail, calendar, web, base, portal). La mayoría sin problemas porque Odoo mantiene rutas de migración oficiales.</p>
+        <p><strong>28 módulos de OCA</strong> (Odoo Community Association). Algunos como account_reports y stock_sms ya estaban incorporados en el core de v18, otros tenían versiones mantenidas en sus ramas.</p>
+        <p><strong>12 módulos personalizados</strong> por diferentes implementadores. Cada uno con su propio estilo de código, documentación de nula a mínima, y calidad variable. Algunos sin autor identificado en los manifest.</p>
+        <p><strong>8 módulos de terceros</strong> adquiridos en Odoo Apps Store. Verificamos si el editor ofrecía versión para v18 y si el contrato de mantenimiento cubría la actualización.</p>
+        <p>
+          Evaluamos cada módulo contra tres criterios: (1) ¿sigue en uso activo? Revisamos logs de acceso, consultamos a los usuarios clave, y verificamos si los datos asociados tenían actividad reciente. (2) ¿tiene versión disponible para v18? (3) ¿podemos reemplazarlo con funcionalidad estándar de v18? 
+        </p>
+        <p>
+          Resultado: solo 32 módulos sobrevivieron. Ejemplos concretos: un módulo de reportes de inventario sin uso desde 2022, un módulo de aprobación de gastos que v18 reemplaza con su flujo nativo, y tres módulos OCA superados por la evolución del core. Esta limpieza redujo el trabajo de migración en casi un 50%.
+        </p>
+
+        <h2>Fase 2: Limpieza de datos (3 días)</h2>
+        <p>Los datos sucios son el enemigo silencioso de cualquier migración.</p>
+        <p><strong>1,200 productos</strong> creados en 2020 con costo cero que nunca tuvieron un movimiento. Productos fantasma de importaciones Excel que nunca se depuraron.</p>
+        <p><strong>4,500 contactos duplicados</strong> por RUC repetido con diferente razón social. Unificamos usando el RUC como clave primaria.</p>
+        <p><strong>87 órdenes de compra</strong> en estado "borrador" desde 2019. Nunca se confirmaron pero quedaron huérfanas. Se cancelaron y archivaron.</p>
+        <p><strong>34 impuestos configurados</strong>, solo 5 en uso activo. Los demás se desactivaron.</p>
+        <p>La limpieza nos tomó 3 días y probablemente nos ahorró 2 semanas de debugging. La regla: limpia antes de migrar, no después. Un registro basura en v13 se multiplica en v18 porque los nuevos modelos tienen relaciones más estrictas.</p>
+
+        <h2>Fase 3: Migración técnica (8 días)</h2>
+        <p><strong>Core y módulos Odoo:</strong> OpenUpgrade fue la herramienta principal. Ejecutamos scripts de pre-migración para detectar inconsistencias. La tabla account_move_line, con 2.8 millones de registros, migró en 45 minutos. El cuello de botella no era PostgreSQL (CPU al 60%), sino la memoria RAM. Subir de 2GB a 4GB redujo el tiempo total de migración de 4 horas a 1.5 horas.</p>
+        <p><strong>Módulos OCA:</strong> Para los que tenían versión v18, cambiamos la rama del repositorio y ejecutamos la migración estándar.</p>
+        <p><strong>Módulos personalizados:</strong> Aquí estuvo el trabajo real. Los cambios de API más relevantes:</p>
+        <p>— Los onchange() fueron reemplazados por computed dependables con @api.depends. El código es más declarativo.</p>
+        <p>— Las vistas QWeb heredadas requerían actualización de sintaxis xpath. Los reportes webkit tuvieron que convertirse al nuevo motor QWeb.</p>
+        <p>— Los record rules en v18 permiten expresiones en lugar de solo domains. Cambió la lógica de seguridad.</p>
+        <p>— Los widgets OWL reemplazaron a los basados en jQuery. Los módulos con frontend custom requirieron reescritura parcial.</p>
+
+        <h2>Fase 4: Testing y puesta en producción (5 días)</h2>
+        <p>
+          Probamos con un dump anonimizado de producción. El cliente asignó a dos personas clave: la contadora principal y el jefe de almacén. Probaron 4 procesos críticos: facturación, inventario, compras y contabilidad.
+        </p>
+        <p>
+          Encontramos 14 bugs. 12 se corrigieron antes del corte: problemas de herencia de vistas, un campo computed que no se recalculaba, reportes con formato incorrecto. Los 2 restantes eran features de v13 no presentes en v18 (un reporte de utilidad por producto y un flujo de aprobación multicompra). Se resolvieron con módulos ligeros.
+        </p>
+        <p>
+          Corte: viernes 6:00 PM. Backup final, migración ejecutada, servidor v18 online a las 10:30 PM. Sábado y domingo para pruebas adicionales. Lunes operando normal.
+        </p>
+
+        <div class="result-box">
+          <div class="result-grid">
+            <div><span class="result-value">$300/mes</span><span class="result-label">ahorro en suscripciones legacy</span></div>
+            <div><span class="result-value">40%</span><span class="result-label">menos módulos que mantener</span></div>
+            <div><span class="result-value">14</span><span class="result-label">bugs detectados en testing</span></div>
+          </div>
+        </div>
+
+        <h2>Resultados y aprendizajes</h2>
+        <p>
+          El ERP migrado quedó más rápido, con menos módulos, más seguro, y con un equipo interno capacitado. Para el cliente, el beneficio más concreto fue dejar de pagar mantenimiento por módulos legacy (~$300/mes).
+        </p>
+        <p>
+          La lección más importante: la migración no es un problema técnico, es un problema de negocio. Cada módulo que sobrevive hay que justificarlo con el cliente. Si no se usa, se elimina. Si se usa poco, se evalúa si vale la pena migrarlo. El trabajo técnico es la parte fácil; lo difícil es tener la disciplina de auditar y limpiar antes de migrar.
+        </p>
+      </div>
+
+      <div class="article-footer">
+        <a href="/#blog" class="back-link">← Volver al blog</a>
+        <a href="/#contact" class="cta-link">¿Necesitas migrar tu Odoo? Hablemos →</a>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .article-page { padding: 60px 0 80px; }
+  .article-container { max-width: 780px; margin: 0 auto; }
+  .back-link { display: inline-block; color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 500; margin-bottom: 24px; }
+  .back-link:hover { text-decoration: underline; }
+  .article-tag { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 4px; background: rgba(99, 102, 241, 0.08); color: var(--accent); font-family: var(--font-mono); margin-bottom: 16px; }
+  .article-container h1 { font-size: 1.8rem; font-weight: 800; line-height: 1.3; margin-bottom: 12px; }
+  .article-meta { font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono); margin-bottom: 40px; }
+  .article-content h2 { font-size: 1.25rem; font-weight: 700; margin: 40px 0 16px; }
+  .article-content p { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 16px; }
+
+  .article-stats { display: flex; gap: 16px; margin: 24px 0 32px; }
+  .a-stat { flex: 1; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.12); border-radius: 8px; padding: 18px 14px; text-align: center; }
+  .a-stat-value { display: block; font-size: 1.5rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); line-height: 1.2; }
+  .a-stat-label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+  .result-box { background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.02)); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: 10px; padding: 28px 24px; margin: 28px 0; }
+  .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; text-align: center; }
+  .result-value { display: block; font-size: 1.5rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); line-height: 1.2; }
+  .result-label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+  .article-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 60px; padding-top: 32px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
+  .cta-link { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+  .cta-link:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .article-page { padding: 40px 0 60px; }
+    .article-container h1 { font-size: 1.4rem; }
+    .article-stats { flex-direction: column; gap: 10px; }
+    .article-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>

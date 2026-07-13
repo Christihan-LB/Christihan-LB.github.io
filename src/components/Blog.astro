@@ -5,711 +5,126 @@
     <p class="section-subtitle">
       Notas técnicas basadas en proyectos reales con empresas peruanas. Sin teoría vacía — solo experiencia aplicada.
     </p>
-    <div class="carousel-wrap">
-      <button class="carousel-btn carousel-prev" aria-label="Anterior">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <div class="carousel-track" id="blogTrack">
-        <article class="blog-card" data-expanded="false">
-          <div class="blog-meta">
-            <span class="blog-date">Julio 2026 · 7 min</span>
-            <span class="blog-tag">Automatización</span>
-          </div>
-          <h3>Automatizar la facturación SUNAT: cómo eliminamos 6 horas semanales de captura manual</h3>
-          <div class="blog-preview">
-            <p>
-              Cada mes, cientos de empresas peruanas pierden horas-hombre capturando facturas una por una. 
-              La SUNAT exige facturación electrónica desde 2018, pero eso solo resolvió el envío. 
-              El problema real sigue siendo otro: los datos llegan en PDF adjunto, en un correo, 
-              en una foto de WhatsApp, o incluso en papel. Alguien — generalmente un asistente contable — 
-              los tipea a Odoo, a Excel o al sistema de facturación.
-            </p>
-            <div class="blog-stats">
-              <div class="stat">
-                <span class="stat-value">350</span>
-                <span class="stat-label">facturas/mes</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value">6 h</span>
-                <span class="stat-label">captura semanal</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value">8%</span>
-                <span class="stat-label">error humano</span>
-              </div>
-            </div>
-            <button class="read-more" data-target="post1">Leer artículo completo ▾</button>
-          </div>
-          <div class="blog-full" id="post1">
-            <h4 class="section-head"><span class="head-line"></span>El problema real</h4>
-            <p>
-              La clínica recibía ~350 facturas de proveedores al mes. Su proceso era: la asistente 
-              contable abría cada PDF, copiaba RUC, razón social, monto, IGV, fecha de emisión y 
-              los pegaba manualmente en Odoo. Una factura simple le tomaba 2-3 minutos. Pero cuando 
-              el comprobante incluía múltiples ítems o el PDF era escaneado, el tiempo se duplicaba. 
-              En total, invertía ~6 horas semanales solo en captura.
-            </p>
-            <p>
-              Medimos durante un mes: el 8% de las facturas ingresadas tenían al menos un error: 
-              montos mal tipeados, RUCs intercambiados, facturas que quedaban sin registrar porque 
-              el PDF se extraviaba en la bandeja de entrada. Cada error significaba una discrepancia 
-              contable que alguien tenía que detectar y corregir después — duplicando el trabajo.
-            </p>
-            <p>
-              Este patrón se repite en casi todas las empresas peruanas con las que he trabajado. 
-              El cuello de botella no es la tecnología, es el proceso manual de transferencia de 
-              datos entre formatos. La SUNAT estandarizó el formato de los comprobantes electrónicos 
-              (XML + PDF dual), pero ese estándar no llega al ERP de la empresa.
-            </p>
+    <div class="blog-preview-grid">
+      <a href="/blog/sunat-automatizacion" class="blog-preview-card">
+        <div class="preview-meta">
+          <span class="preview-date">Julio 2026 · 7 min</span>
+          <span class="preview-tag">Automatización</span>
+        </div>
+        <h3>Automatizar la facturación SUNAT con Python</h3>
+        <p>Cómo un pipeline de 6 etapas eliminó 6 horas semanales de captura manual en una clínica de San Isidro. OCR, validación contra catálogos SUNAT e integración con Odoo.</p>
+        <div class="preview-stats">
+          <span>350 facturas/mes</span>
+          <span>S/ 1,800 ahorro/mes</span>
+          <span>99.7% uptime</span>
+        </div>
+        <span class="preview-cta">Leer artículo →</span>
+      </a>
 
-            <div class="divider"><span class="divider-dot"></span></div>
+      <a href="/blog/migracion-odoo" class="blog-preview-card">
+        <div class="preview-meta">
+          <span class="preview-date">Junio 2026 · 7 min</span>
+          <span class="preview-tag">Odoo</span>
+        </div>
+        <h3>Migración Odoo v13 → v18: 3 semanas después</h3>
+        <p>60 módulos auditados, 28 eliminados, 2.8M registros migrados. Las 4 fases de una migración real: auditoría, limpieza, migración técnica y puesta en producción.</p>
+        <div class="preview-stats">
+          <span>60 módulos auditados</span>
+          <span>40% menos módulos</span>
+          <span>$300/mes ahorro</span>
+        </div>
+        <span class="preview-cta">Leer artículo →</span>
+      </a>
 
-            <h4 class="section-head"><span class="head-line"></span>Pipeline de 6 etapas</h4>
-            <p>Construí un pipeline automatizado en Python. Herramientas existentes conectadas con reglas de negocio peruanas.</p>
-            <div class="pipeline">
-              <div class="pipe-step">
-                <div class="pipe-number">1</div>
-                <div class="pipe-body">
-                  <strong>Recepción</strong>
-                  <p>Gmail API + systemd timer cada 5 min. Etiquetas para evitar reprocesos.</p>
-                </div>
-              </div>
-              <div class="pipe-step">
-                <div class="pipe-number">2</div>
-                <div class="pipe-body">
-                  <strong>Extracción</strong>
-                  <p>pdfplumber (digital) o Tesseract OCR (escaneado). 70% digital, 30% escaneado.</p>
-                </div>
-              </div>
-              <div class="pipe-step">
-                <div class="pipe-number">3</div>
-                <div class="pipe-body">
-                  <strong>Parseo</strong>
-                  <p>Reglas con validación cruzada: monto total = subtotal + IGV (tolerancia S/ 1).</p>
-                </div>
-              </div>
-              <div class="pipe-step">
-                <div class="pipe-number">4</div>
-                <div class="pipe-body">
-                  <strong>Validación</strong>
-                  <p>Contra catálogos SUNAT: RUC activo, moneda, tributo. Sin duplicados.</p>
-                </div>
-              </div>
-              <div class="pipe-step">
-                <div class="pipe-number">5</div>
-                <div class="pipe-body">
-                  <strong>Registro Odoo</strong>
-                  <p>xmlrpc + ir.attachment. PDF al chatter. Plazo de pago automático.</p>
-                </div>
-              </div>
-              <div class="pipe-step">
-                <div class="pipe-number">6</div>
-                <div class="pipe-body">
-                  <strong>Excepción</strong>
-                  <p>Dashboard Streamlit. 94% pasa sin intervención. 6% requiere 30s de revisión.</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="divider"><span class="divider-dot"></span></div>
-
-            <h4 class="section-head"><span class="head-line"></span>Infraestructura y costos</h4>
-            <p>
-              VPS DigitalOcean $10/mes (2GB RAM, 1 vCPU, 50GB SSD). Python 3.11, pdfplumber, 
-              pytesseract, opencv-python, sqlite. CPU ~40%, memoria bajo 500MB. Desarrollo: 
-              3 semanas (2 de pruebas con facturas históricas).
-            </p>
-
-            <div class="result-box">
-              <div class="result-grid">
-                <div><span class="result-value">S/ 1,800</span><span class="result-label">ahorro mensual</span></div>
-                <div><span class="result-value">99.7%</span><span class="result-label">uptime 3 meses</span></div>
-                <div><span class="result-value">~1,050</span><span class="result-label">facturas procesadas</span></div>
-                <div><span class="result-value">0.5%</span><span class="result-label">error residual</span></div>
-              </div>
-            </div>
-
-            <h4 class="section-head"><span class="head-line"></span>Lecciones</h4>
-            <div class="lessons">
-              <div class="lesson"><span class="lesson-icon">→</span><div><strong>No necesitas IA.</strong> pdfplumber resolvió el 90%. El valor está en las reglas contables peruanas.</div></div>
-              <div class="lesson"><span class="lesson-icon">→</span><div><strong>SUNAT no es tan estándar.</strong> El parser se entrenó con ~400 facturas reales.</div></div>
-              <div class="lesson"><span class="lesson-icon">→</span><div><strong>6% de excepción es aceptable.</strong> Llegar a 100% habría costado 3 meses más.</div></div>
-              <div class="lesson"><span class="lesson-icon">→</span><div><strong>ROI en semanas.</strong> Proyecto S/ 5,000. Ahorro S/ 1,800/mes. Recuperación en &lt;3 meses.</div></div>
-            </div>
-            <button class="read-less" data-target="post1">Mostrar menos ▴</button>
-          </div>
-        </article>
-
-        <article class="blog-card" data-expanded="false">
-          <div class="blog-meta">
-            <span class="blog-date">Junio 2026 · 7 min</span>
-            <span class="blog-tag">Odoo</span>
-          </div>
-          <h3>Migración Odoo v13 → v18: 3 semanas, 60 módulos y 2.8M de registros después</h3>
-          <div class="blog-preview">
-            <p>
-              En marzo de 2026 completé la migración de un cliente de Odoo 13 Enterprise a 
-              Odoo 18. El salto de v13 a v18 implica 5 versiones mayores, cada una con 
-              breaking changes, nuevos modelos y APIs deprecadas. La mala práctica más común: 
-              migrar todo de golpe sin auditar. La correcta: auditar, limpiar y migrar en capas.
-            </p>
-            <div class="blog-stats">
-              <div class="stat"><span class="stat-value">60</span><span class="stat-label">módulos auditados</span></div>
-              <div class="stat"><span class="stat-value">28</span><span class="stat-label">módulos eliminados</span></div>
-              <div class="stat"><span class="stat-value">2.8M</span><span class="stat-label">registros migrados</span></div>
-            </div>
-            <button class="read-more" data-target="post2">Leer artículo completo ▾</button>
-          </div>
-          <div class="blog-full" id="post2">
-            <div class="phases">
-              <details class="phase">
-                <summary class="phase-header">
-                  <span class="phase-num">Fase 1</span><span class="phase-title">Auditoría</span><span class="phase-duration">5 días</span><span class="phase-arrow">▾</span>
-                </summary>
-                <div class="phase-body">
-                  <p>60 módulos: 12 estándar, 28 OCA, 12 personalizados, 8 terceros. Evaluación por uso activo, versión v18, y reemplazo con core. Solo 32 sobrevivieron.</p>
-                  <p class="phase-example">Hallazgo: módulo de reportes sin uso desde 2022, aprobación de gastos reemplazable por flujo nativo v18, 3 OCA superados por el core.</p>
-                </div>
-              </details>
-              <details class="phase">
-                <summary class="phase-header">
-                  <span class="phase-num">Fase 2</span><span class="phase-title">Limpieza</span><span class="phase-duration">3 días</span><span class="phase-arrow">▾</span>
-                </summary>
-                <div class="phase-body">
-                  <p>1,200 productos fantasma, 4,500 contactos duplicados por RUC, 87 órdenes en borrador desde 2019, 34 impuestos configurados (5 en uso). Nos ahorró ~2 semanas de debugging.</p>
-                </div>
-              </details>
-              <details class="phase">
-                <summary class="phase-header">
-                  <span class="phase-num">Fase 3</span><span class="phase-title">Migración técnica</span><span class="phase-duration">8 días</span><span class="phase-arrow">▾</span>
-                </summary>
-                <div class="phase-body">
-                  <p>OpenUpgrade. account_move_line (2.8M registros) en 45 min. Cuello de botella: RAM. Subir de 2GB a 4GB redujo el total de 4h a 1.5h. Módulos custom requirieron reescritura parcial.</p>
-                </div>
-              </details>
-              <details class="phase">
-                <summary class="phase-header">
-                  <span class="phase-num">Fase 4</span><span class="phase-title">Testing y producción</span><span class="phase-duration">5 días</span><span class="phase-arrow">▾</span>
-                </summary>
-                <div class="phase-body">
-                  <p>Dump anonimizado. Usuarios clave probaron facturación, inventario, compras y contabilidad. 14 bugs, 12 corregidos antes del corte. Corte viernes 6pm, lunes operando en v18.</p>
-                </div>
-              </details>
-            </div>
-            <div class="result-box">
-              <div class="result-grid">
-                <div><span class="result-value">$300/mes</span><span class="result-label">ahorro suscripciones legacy</span></div>
-                <div><span class="result-value">40%</span><span class="result-label">menos módulos</span></div>
-                <div><span class="result-value">14</span><span class="result-label">bugs detectados</span></div>
-              </div>
-            </div>
-            <button class="read-less" data-target="post2">Mostrar menos ▴</button>
-          </div>
-        </article>
-
-        <article class="blog-card" data-expanded="false">
-          <div class="blog-meta">
-            <span class="blog-date">Mayo 2026 · 8 min</span>
-            <span class="blog-tag">Productividad</span>
-          </div>
-          <h3>Automatización sin código: 3 procesos que cualquier PYME peruana puede delegar hoy</h3>
-          <div class="blog-preview">
-            <p>
-              "No tenemos área de sistemas" es la frase que más escucho. La asumen como limitación, 
-              como si la automatización solo fuera posible con ingenieros. La realidad: con 
-              herramientas visuales como n8n, Make.com y Google Apps Script, cualquier empresa 
-              puede automatizar sin escribir código.
-            </p>
-            <div class="blog-stats">
-              <div class="stat"><span class="stat-value">3</span><span class="stat-label">casos reales</span></div>
-              <div class="stat"><span class="stat-value">10+ h</span><span class="stat-label">ahorro semanal c/u</span></div>
-              <div class="stat"><span class="stat-value">0</span><span class="stat-label">líneas de código</span></div>
-            </div>
-            <button class="read-more" data-target="post3">Leer artículo completo ▾</button>
-          </div>
-          <div class="blog-full" id="post3">
-            <div class="case-card">
-              <div class="case-header"><span class="case-number">Caso 1</span><span class="case-title">Estudio de abogados · Miraflores</span></div>
-              <div class="case-body">
-                <div class="case-section"><strong>Problema:</strong> ~80 notificaciones judiciales/mes. Asistente clasificaba y reenviaba manualmente. 5-7 min c/u = ~8 h/mes.</div>
-                <div class="case-section"><strong>Solución:</strong> n8n: trigger Gmail → clasificador por especialidad + carga → WhatsApp API + Google Drive. Respuesta en &lt;2 min.</div>
-                <div class="case-result"><span>0 h intermediación</span><span>0 notificaciones perdidas/6 meses</span></div>
-              </div>
-            </div>
-            <div class="case-card">
-              <div class="case-header"><span class="case-number">Caso 2</span><span class="case-title">Colegio privado · San Miguel</span></div>
-              <div class="case-body">
-                <div class="case-section"><strong>Problema:</strong> Reportes bimestrales para 600 alumnos. SIAGIE → Word → imprimir → sobres. 3 personas, 3 días.</div>
-                <div class="case-section"><strong>Solución:</strong> Google Apps Script: Sheets → plantilla Docs → PDF automático → envío Gmail. 45 min.</div>
-                <div class="case-result"><span>3 días → 45 min</span><span>S/ 300 bimestrales ahorrados</span></div>
-              </div>
-            </div>
-            <div class="case-card">
-              <div class="case-header"><span class="case-number">Caso 3</span><span class="case-title">Distribuidora de alimentos · Surco</span></div>
-              <div class="case-body">
-                <div class="case-section"><strong>Problema:</strong> ~120 pagos/día. Asistente cruzaba extracto vs facturas Odoo. 2 h/día. Cierre al día 3.</div>
-                <div class="case-section"><strong>Solución:</strong> n8n + API BCP + Odoo. Workflow nocturno. 97% acierto en 25,000+ transacciones.</div>
-                <div class="case-result"><span>2 h → 5 min supervisión</span><span>Cierre día 1 hábil</span></div>
-              </div>
-            </div>
-
-            <div class="divider"><span class="divider-dot"></span></div>
-
-            <h4 class="section-head"><span class="head-line"></span>Marco: procesos automatizables</h4>
-            <p>4 criterios que uso en 20+ proyectos:</p>
-            <div class="criteria">
-              <div class="criterion"><span class="criterion-num">1</span><div><strong>Repetitivos</strong><p>Más de una vez al día = candidato.</p></div></div>
-              <div class="criterion"><span class="criterion-num">2</span><div><strong>Reglas claras</strong><p>"Cuando X, haz Y" = funciona.</p></div></div>
-              <div class="criterion"><span class="criterion-num">3</span><div><strong>Conectan sistemas</strong><p>Datos atrapados que deben moverse.</p></div></div>
-              <div class="criterion"><span class="criterion-num">4</span><div><strong>Costo medible</strong><p>ROI en 6 meses = viable.</p></div></div>
-            </div>
-            <button class="read-less" data-target="post3">Mostrar menos ▴</button>
-          </div>
-        </article>
-      </div>
-      <button class="carousel-btn carousel-next" aria-label="Siguiente">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
+      <a href="/blog/automatizacion-sin-codigo" class="blog-preview-card">
+        <div class="preview-meta">
+          <span class="preview-date">Mayo 2026 · 8 min</span>
+          <span class="preview-tag">Productividad</span>
+        </div>
+        <h3>3 procesos que cualquier PYME puede automatizar hoy</h3>
+        <p>Tres casos reales con n8n y Google Apps Script: estudio de abogados, colegio con SIAGIE, distribuidora con conciliación bancaria. Sin código, sin área de sistemas.</p>
+        <div class="preview-stats">
+          <span>3 casos reales</span>
+          <span>10+ h ahorro semanal</span>
+          <span>0 líneas de código</span>
+        </div>
+        <span class="preview-cta">Leer artículo →</span>
+      </a>
     </div>
-    <div class="carousel-dots" id="blogDots"></div>
   </div>
 </section>
 
 <style>
-  .carousel-wrap {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    margin: 0 0 16px;
-  }
-
-  .carousel-track {
-    display: flex;
+  .blog-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    padding: 4px 0;
-    flex: 1;
   }
 
-  .carousel-track::-webkit-scrollbar {
-    display: none;
-  }
-
-  .blog-card {
-    flex: 0 0 calc(100% - 48px);
-    scroll-snap-align: start;
+  .blog-preview-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 36px 32px;
+    padding: 32px 28px;
     transition: all 0.3s;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
   }
 
-  .blog-card:hover {
+  .blog-preview-card:hover {
     border-color: var(--accent);
-    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.06);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
   }
 
-  .blog-meta {
+  .preview-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 14px;
   }
 
-  .blog-date {
-    font-size: 0.8rem;
+  .preview-date {
+    font-size: 0.78rem;
     color: var(--text-secondary);
     font-family: var(--font-mono);
   }
 
-  .blog-card h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 18px;
-    line-height: 1.4;
+  .preview-tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--accent);
+    font-family: var(--font-mono);
   }
 
-  .blog-preview p {
-    font-size: 0.9rem;
+  .blog-preview-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.35;
+  }
+
+  .blog-preview-card p {
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    line-height: 1.65;
+    line-height: 1.55;
+    margin-bottom: 16px;
+    flex: 1;
+  }
+
+  .preview-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-bottom: 16px;
   }
 
-  .blog-tag {
-    font-size: 0.75rem;
-    padding: 3px 10px;
-    border-radius: 4px;
-    background: rgba(99, 102, 241, 0.08);
-    color: var(--accent);
-    font-family: var(--font-mono);
-  }
-
-  /* Stats */
-  .blog-stats {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat {
-    flex: 1;
-    background: rgba(99, 102, 241, 0.05);
-    border: 1px solid rgba(99, 102, 241, 0.12);
-    border-radius: 8px;
-    padding: 14px 10px;
-    text-align: center;
-  }
-
-  .stat-value {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    line-height: 1.2;
-  }
-
-  .stat-label {
-    display: block;
+  .preview-stats span {
     font-size: 0.7rem;
-    color: var(--text-secondary);
-    margin-top: 3px;
-  }
-
-  /* Read more/less buttons */
-  .read-more, .read-less {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--accent);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-
-  .read-more:hover, .read-less:hover {
-    background: rgba(99, 102, 241, 0.06);
-    border-color: var(--accent);
-  }
-
-  /* Expanded content */
-  .blog-full {
-    display: none;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
-
-  .blog-card[data-expanded="true"] .blog-full {
-    display: block;
-  }
-
-  .blog-card[data-expanded="true"] .blog-preview .read-more {
-    display: none;
-  }
-
-  .blog-full p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin-bottom: 14px;
-  }
-
-  .section-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 24px 0 14px;
-    color: var(--text-primary);
-  }
-
-  .head-line {
-    width: 3px;
-    height: 16px;
-    border-radius: 2px;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 24px 0;
-  }
-
-  .divider-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--accent);
-    opacity: 0.35;
-  }
-
-  /* Pipeline */
-  .pipeline {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin: 14px 0;
-  }
-
-  .pipe-step {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    background: rgba(99, 102, 241, 0.03);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .pipe-number {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-family: var(--font-mono);
-  }
-
-  .pipe-body strong {
-    display: block;
-    font-size: 0.82rem;
-    margin-bottom: 2px;
-    color: var(--text-primary);
-  }
-
-  .pipe-body p {
-    font-size: 0.75rem !important;
-    margin: 0 !important;
-    color: var(--text-secondary);
-    line-height: 1.35 !important;
-  }
-
-  /* Result box */
-  .result-box {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.02));
-    border: 1px solid rgba(99, 102, 241, 0.15);
-    border-radius: 10px;
-    padding: 20px 16px;
-    margin: 18px 0;
-  }
-
-  .result-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 14px;
-    text-align: center;
-  }
-
-  .result-value {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    line-height: 1.2;
-  }
-
-  .result-label {
-    display: block;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    margin-top: 3px;
-  }
-
-  /* Lessons */
-  .lessons {
-    display: grid;
-    gap: 8px;
-    margin: 14px 0 0;
-  }
-
-  .lesson {
-    display: flex;
-    gap: 8px;
-    padding: 10px 12px;
-    background: rgba(99, 102, 241, 0.03);
-    border-left: 2px solid var(--accent);
-    border-radius: 0 6px 6px 0;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.45;
-  }
-
-  .lesson-icon {
-    color: var(--accent);
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .lesson strong {
-    color: var(--text-primary);
-  }
-
-  /* Phases */
-  .phases {
-    display: grid;
-    gap: 8px;
-    margin: 16px 0;
-  }
-
-  .phase {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .phase[open] {
-    border-color: rgba(99, 102, 241, 0.25);
-  }
-
-  .phase-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    cursor: pointer;
-    list-style: none;
-    font-size: 0.85rem;
-    user-select: none;
-  }
-
-  .phase-header::-webkit-details-marker {
-    display: none;
-  }
-
-  .phase-num {
-    font-size: 0.65rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    color: var(--accent);
-    background: rgba(99, 102, 241, 0.08);
-    padding: 2px 7px;
-    border-radius: 4px;
-  }
-
-  .phase-title {
-    flex: 1;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .phase-duration {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-  }
-
-  .phase-arrow {
-    color: var(--text-secondary);
-    font-size: 0.65rem;
-    transition: transform 0.2s;
-  }
-
-  .phase[open] .phase-arrow {
-    transform: rotate(180deg);
-  }
-
-  .phase-body {
-    padding: 0 14px 14px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    border-top: 1px solid var(--border);
-    padding-top: 12px;
-  }
-
-  .phase-body p {
-    font-size: 0.85rem !important;
-    margin-bottom: 8px !important;
-  }
-
-  .phase-example {
-    font-size: 0.8rem !important;
-    background: rgba(99, 102, 241, 0.04);
-    padding: 8px 10px;
-    border-radius: 6px;
-  }
-
-  /* Case cards */
-  .case-card {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 14px 0;
-  }
-
-  .case-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    background: rgba(99, 102, 241, 0.04);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .case-number {
-    font-size: 0.65rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    color: var(--accent);
-    background: rgba(99, 102, 241, 0.08);
-    padding: 2px 7px;
-    border-radius: 4px;
-  }
-
-  .case-title {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--text-primary);
-  }
-
-  .case-body {
-    padding: 14px 16px;
-  }
-
-  .case-section {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    margin-bottom: 8px;
-  }
-
-  .case-section strong {
-    color: var(--text-primary);
-  }
-
-  .case-result {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
-
-  .case-result span {
-    font-size: 0.75rem;
     font-weight: 600;
     color: var(--accent);
     padding: 3px 8px;
@@ -718,209 +133,22 @@
     font-family: var(--font-mono);
   }
 
-  /* Criteria */
-  .criteria {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin: 14px 0 0;
-  }
-
-  .criterion {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .criterion-num {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(99, 102, 241, 0.1);
+  .preview-cta {
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--accent);
-    font-size: 0.7rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-family: var(--font-mono);
+    margin-top: auto;
   }
 
-  .criterion strong {
-    display: block;
-    font-size: 0.82rem;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-  }
-
-  .criterion p {
-    font-size: 0.75rem !important;
-    margin: 0 !important;
-    color: var(--text-secondary);
-    line-height: 1.35 !important;
-  }
-
-  /* Carousel buttons */
-  .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .carousel-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(99, 102, 241, 0.06);
-  }
-
-  .carousel-prev {
-    left: -20px;
-  }
-
-  .carousel-next {
-    right: -20px;
-  }
-
-  /* Dots */
-  .carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .carousel-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border);
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    padding: 0;
-  }
-
-  .carousel-dot.active {
-    background: var(--accent);
-    width: 24px;
-    border-radius: 4px;
-  }
-
-  @media (max-width: 768px) {
-    .blog-card {
-      padding: 24px 20px;
+  @media (max-width: 1024px) and (min-width: 641px) {
+    .blog-preview-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
+  }
 
-    .blog-card h3 {
-      font-size: 1rem;
-    }
-
-    .blog-stats {
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .pipeline {
+  @media (max-width: 640px) {
+    .blog-preview-grid {
       grid-template-columns: 1fr;
-    }
-
-    .result-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .criteria {
-      grid-template-columns: 1fr;
-    }
-
-    .carousel-btn {
-      display: none;
     }
   }
 </style>
-
-<script>
-  (function() {
-    const track = document.getElementById('blogTrack');
-    if (!track) return;
-
-    const cards = track.querySelectorAll('.blog-card');
-    const dotsContainer = document.getElementById('blogDots');
-
-    // Create dots
-    cards.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-      dot.setAttribute('aria-label', 'Ir al artículo ' + (i + 1));
-      dot.addEventListener('click', () => {
-        cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-      });
-      dotsContainer.appendChild(dot);
-    });
-
-    const dots = dotsContainer.querySelectorAll('.carousel-dot');
-
-    // Update dots on scroll
-    const updateDots = () => {
-      const scrollLeft = track.scrollLeft;
-      const cardWidth = cards[0].offsetWidth + 24;
-      const idx = Math.round(scrollLeft / cardWidth);
-      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    };
-
-    track.addEventListener('scroll', updateDots);
-
-    // Arrow buttons
-    const prev = document.querySelector('.carousel-prev');
-    const next = document.querySelector('.carousel-next');
-
-    if (prev) {
-      prev.addEventListener('click', () => {
-        const cardWidth = cards[0].offsetWidth + 24;
-        track.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-      });
-    }
-
-    if (next) {
-      next.addEventListener('click', () => {
-        const cardWidth = cards[0].offsetWidth + 24;
-        track.scrollBy({ left: cardWidth, behavior: 'smooth' });
-      });
-    }
-
-    // Expand/collapse
-    document.querySelectorAll('.read-more').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = document.getElementById(btn.dataset.target);
-        if (target) {
-          const card = target.closest('.blog-card');
-          card.setAttribute('data-expanded', 'true');
-        }
-      });
-    });
-
-    document.querySelectorAll('.read-less').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = document.getElementById(btn.dataset.target);
-        if (target) {
-          const card = target.closest('.blog-card');
-          card.setAttribute('data-expanded', 'false');
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-        }
-      });
-    });
-  })();
-</script>

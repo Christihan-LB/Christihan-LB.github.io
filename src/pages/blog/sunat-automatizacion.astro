@@ -1,0 +1,384 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Base title="Automatizar facturación SUNAT con Python — Christihan Laurel" description="Pipeline de 6 etapas para automatizar la captura de facturas SUNAT. OCR, validación e integración con Odoo. Caso real: clínica en San Isidro.">
+  <Header />
+  <main class="article-page">
+    <div class="container article-container">
+      <a href="/#blog" class="back-link">← Volver al blog</a>
+      <span class="article-tag">Automatización</span>
+      <h1>Automatizar la facturación SUNAT: cómo eliminamos 6 horas semanales de captura manual</h1>
+      <div class="article-meta">Julio 2026 · 7 min de lectura</div>
+
+      <div class="article-content">
+        <p>
+          Cada mes, cientos de empresas peruanas pierden horas-hombre capturando facturas una por una. 
+          La SUNAT exige facturación electrónica desde 2018, pero eso solo resolvió el envío. 
+          El problema real sigue siendo otro: los datos llegan en PDF adjunto, en un correo, 
+          en una foto de WhatsApp, o incluso en papel. Alguien — generalmente un asistente contable — 
+          los tipea a Odoo, a Excel o al sistema de facturación. Y ahí se pierden horas y se generan errores.
+        </p>
+
+        <div class="article-stats">
+          <div class="a-stat"><span class="a-stat-value">350</span><span class="a-stat-label">facturas/mes recibía la clínica</span></div>
+          <div class="a-stat"><span class="a-stat-value">6 h</span><span class="a-stat-label">semanales de captura manual</span></div>
+          <div class="a-stat"><span class="a-stat-value">8%</span><span class="a-stat-label">de error humano en ingreso</span></div>
+        </div>
+
+        <h2>El problema real</h2>
+        <p>
+          La clínica recibía ~350 facturas de proveedores al mes. Su proceso era: la asistente 
+          contable abría cada PDF, copiaba RUC, razón social, monto, IGV, fecha de emisión y 
+          los pegaba manualmente en Odoo. Una factura simple le tomaba 2-3 minutos. Pero cuando 
+          el comprobante incluía múltiples ítems o el PDF era escaneado (una imagen, no texto 
+          seleccionable), el tiempo se duplicaba. En total, invertía ~6 horas semanales solo 
+          en captura.
+        </p>
+        <p>
+          Además del tiempo, estaba el error humano. Medimos durante un mes: el 8% de las 
+          facturas ingresadas tenían al menos un error: montos mal tipeados, RUCs intercambiados, 
+          facturas que quedaban sin registrar porque el PDF se extraviaba en la bandeja de 
+          entrada. Cada error significaba una discrepancia contable que alguien tenía que 
+          detectar y corregir después — duplicando el trabajo.
+        </p>
+        <p>
+          Este patrón se repite en casi todas las empresas peruanas con las que he trabajado. 
+          El cuello de botella no es la tecnología, es el proceso manual de transferencia de 
+          datos entre formatos. La SUNAT estandarizó el formato de los comprobantes electrónicos 
+          (XML + PDF dual), pero ese estándar no llega al ERP de la empresa. Ahí está el hueco 
+          que hay que cerrar.
+        </p>
+
+        <h2>La solución: pipeline de 6 etapas</h2>
+        <p>
+          Construí un pipeline automatizado en Python que procesa facturas desde que llegan por 
+          correo hasta que se registran en Odoo. No inventé nada nuevo — usé herramientas 
+          existentes y las conecté con reglas de negocio específicas para la realidad contable 
+          peruana. El pipeline tiene 6 etapas bien definidas:
+        </p>
+
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-number">1</div>
+            <div class="pipe-body">
+              <strong>Recepción</strong>
+              <p>La clínica abrió un correo Gmail exclusivo para facturas (facturas@clinica.pe). Un script corre como servicio systemd cada 5 minutos, se conecta vía Gmail API con OAuth 2.0, y descarga los adjuntos de los correos no leídos. Usamos etiquetas de Gmail para marcar los correos procesados y evitar reprocesarlos.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-number">2</div>
+            <div class="pipe-body">
+              <strong>Extracción</strong>
+              <p>Aquí hay dos caminos. Si el PDF es digital (tiene texto seleccionable), usamos pdfplumber, que extrae el texto con coordenadas precisas. Si el PDF es escaneado (imagen), entra OpenCV + Tesseract OCR para convertir la imagen a texto. La detección es automática: pdfplumber intenta extraer texto, y si el resultado tiene menos de 50 caracteres, asumimos que es escaneado y saltamos a OCR. En producción, el 70% de los PDFs eran digitales y el 30% escaneados. El OCR con Tesseract entrenado para español alcanza ~92% de precisión en caracteres con documentos SUNAT estándar.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-number">3</div>
+            <div class="pipe-body">
+              <strong>Parseo</strong>
+              <p>El texto extraído no sirve si no podemos identificar los campos. El formato de factura SUNAT tiene una estructura semi-estándar: el RUC del emisor aparece como "RUC: 20123456789", el monto total como "Total: S/ 1,234.56", el IGV como "IGV (18%): S/ 222.22". Usé expresiones regulares para cada campo, con validaciones cruzadas: por ejemplo, el monto total debe coincidir con la suma del subtotal más IGV (con tolerancia de S/ 1 por redondeo). El parser también identifica moneda (Soles o Dólares), tipo de comprobante (factura, boleta, nota de crédito), y serie-número correlativo.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-number">4</div>
+            <div class="pipe-body">
+              <strong>Validación</strong>
+              <p>Antes de crear la factura en Odoo, validamos los datos contra los catálogos oficiales de SUNAT. Verificamos que el RUC exista y esté activo (consulta a SUNAT vía API pública), que el tipo de comprobante sea válido, que la moneda esté en el catálogo 02, que el código de tributo (IGV, ISC) sea correcto. También validaciones de negocio: ¿el proveedor ya existe en Odoo? Si no, se crea automáticamente con los datos extraídos. ¿La factura ya fue registrada? Comparamos RUC + serie + número contra la base de datos para evitar duplicados.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-number">5</div>
+            <div class="pipe-body">
+              <strong>Registro en Odoo</strong>
+              <p>Con los datos validados, llamamos a la API de Odoo (xmlrpc, que es la interfaz más estable para integraciones externas) para crear la factura de proveedor. El PDF original se adjunta al chatter del registro mediante el modelo ir.attachment, vinculado al account.move creado. Si el proveedor tiene un plazo de pago configurado en Odoo, la fecha de vencimiento se calcula automáticamente.</p>
+            </div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-number">6</div>
+            <div class="pipe-body">
+              <strong>Excepción</strong>
+              <p>Si alguna etapa falla (OCR de baja calidad, validación contra SUNAT que no pasa, RUC no encontrado), la factura no se pierde. Se deriva a una bandeja de revisión manual: un dashboard simple en Streamlit donde la asistente ve el PDF original, el error detectado, y puede corregir los datos manualmente. En producción, el 94% de las facturas pasan sin intervención; el 6% restante requiere revisión manual de menos de 30 segundos cada una.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2>Infraestructura y costos</h2>
+        <p>
+          El pipeline corre en una VPS de DigitalOcean de $10/mes (2GB RAM, 1 vCPU, 50GB SSD). 
+          El script principal está escrito en Python 3.11 con las librerías: pdfplumber, 
+          pytesseract, opencv-python, requests, y un módulo propio para la comunicación con 
+          Odoo vía xmlrpc. La base de datos de seguimiento (log de procesamiento, facturas 
+          procesadas, errores) usa SQLite. Programamos un cron con systemd timer que ejecuta 
+          el script cada 5 minutos. El consumo de CPU en pico es ~40%, y la memoria no supera 
+          los 500MB. El desarrollo completo tomó 3 semanas, incluyendo 2 semanas de pruebas 
+          con facturas históricas para ajustar el parser a las variaciones de formato entre 
+          diferentes emisores.
+        </p>
+
+        <div class="result-box">
+          <div class="result-grid">
+            <div><span class="result-value">S/ 1,800</span><span class="result-label">ahorro mensual</span></div>
+            <div><span class="result-value">99.7%</span><span class="result-label">uptime en 3 meses</span></div>
+            <div><span class="result-value">~1,050</span><span class="result-label">facturas procesadas</span></div>
+            <div><span class="result-value">0.5%</span><span class="result-label">tasa de error residual</span></div>
+          </div>
+        </div>
+
+        <h2>Lecciones aprendidas</h2>
+        <div class="lessons">
+          <div class="lesson"><span class="lesson-icon">→</span><div><strong>No necesitas IA para automatizar.</strong> Hay una tendencia a pensar que todo necesita Machine Learning. pdfplumber resolvió el 90% del problema sin ningún modelo. El OCR (Tesseract) solo entra en casos específicos. La inteligencia real está en las reglas de validación que reflejan cómo funciona la contabilidad peruana.</div></div>
+          <div class="lesson"><span class="lesson-icon">→</span><div><strong>El formato SUNAT no es tan estándar como parece.</strong> Cada emisor tiene variaciones: algunos ponen "RUC" y otros "R.U.C.", algunos usan "Monto Total" y otros "Total a Pagar". El parser tuvo que entrenarse con ~400 facturas reales de diferentes proveedores para cubrir las variaciones más comunes.</div></div>
+          <div class="lesson"><span class="lesson-icon">→</span><div><strong>El 6% de excepción es aceptable.</strong> Intentar llegar a 100% de automatización habría requerido 3 meses más de desarrollo para ganar solo 6 puntos porcentuales. La bandeja de revisión manual es una solución pragmática que mantiene el ROI alto.</div></div>
+          <div class="lesson"><span class="lesson-icon">→</span><div><strong>El ROI se mide en semanas, no en años.</strong> Incluyendo desarrollo e infraestructura, el proyecto costó ~S/ 5,000. El ahorro mensual es de S/ 1,800. El retorno de inversión se alcanzó en menos de 3 meses.</div></div>
+        </div>
+      </div>
+
+      <div class="article-footer">
+        <a href="/#blog" class="back-link">← Volver al blog</a>
+        <a href="/#contact" class="cta-link">¿Quieres automatizar tu facturación? Contáctame →</a>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .article-page {
+    padding: 60px 0 80px;
+  }
+
+  .article-container {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .article-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    margin-bottom: 16px;
+  }
+
+  .article-container h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .article-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    margin-bottom: 40px;
+  }
+
+  .article-content h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 40px 0 16px;
+  }
+
+  .article-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+
+  .article-stats {
+    display: flex;
+    gap: 16px;
+    margin: 24px 0 32px;
+  }
+
+  .a-stat {
+    flex: 1;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    border-radius: 8px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+
+  .a-stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+  }
+
+  .a-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .pipeline {
+    display: grid;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .pipe-step {
+    display: flex;
+    gap: 14px;
+    padding: 16px 18px;
+    background: rgba(99, 102, 241, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .pipe-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .pipe-body strong {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+
+  .pipe-body p {
+    font-size: 0.88rem !important;
+    margin: 0 !important;
+    color: var(--text-secondary);
+    line-height: 1.55 !important;
+  }
+
+  .result-box {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.02));
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 10px;
+    padding: 28px 24px;
+    margin: 28px 0;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px;
+    text-align: center;
+  }
+
+  .result-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+  }
+
+  .result-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .lessons {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .lesson {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    background: rgba(99, 102, 241, 0.03);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .lesson-icon {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .lesson strong {
+    color: var(--text-primary);
+  }
+
+  .article-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 60px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .cta-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .cta-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .article-page {
+      padding: 40px 0 60px;
+    }
+
+    .article-container h1 {
+      font-size: 1.4rem;
+    }
+
+    .article-stats {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .article-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
