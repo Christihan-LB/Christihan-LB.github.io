@@ -31,6 +31,10 @@ import Base from '../layouts/Base.astro';
           <span class="big-num">173</span>
           <span class="big-label">GitLab.com</span>
         </div>
+        <div class="big-stat review-stat">
+          <span class="big-num">226</span>
+          <span class="big-label">Revisiones técnicas</span>
+        </div>
       </div>
 
       <div class="section-card">
@@ -121,6 +125,38 @@ import Base from '../layouts/Base.astro';
         </div>
       </div>
 
+      <div class="section-card">
+        <h2>226 revisiones técnicas realizadas</h2>
+        <div class="review-section">
+          <p class="review-intro">MRs/PRs donde participé como reviewer formal o mediante LGTM.</p>
+          <div class="review-bar">
+            <span class="rev-label">ircanada/ircodoo</span>
+            <div class="bar-track"><div class="bar-fill rev-fill" style="width:83.2%"></div></div>
+            <span class="rev-count">188</span>
+          </div>
+          <div class="review-bar">
+            <span class="rev-label">Vauxoo (int.)</span>
+            <div class="bar-track"><div class="bar-fill rev-fill" style="width:7.5%"></div></div>
+            <span class="rev-count">17</span>
+          </div>
+          <div class="review-bar">
+            <span class="rev-label">GitHub.com</span>
+            <div class="bar-track"><div class="bar-fill rev-fill" style="width:4%"></div></div>
+            <span class="rev-count">9</span>
+          </div>
+          <div class="review-bar">
+            <span class="rev-label">apps-purchased</span>
+            <div class="bar-track"><div class="bar-fill rev-fill" style="width:3.5%"></div></div>
+            <span class="rev-count">8</span>
+          </div>
+          <div class="review-bar">
+            <span class="rev-label">ircodoo-dev</span>
+            <div class="bar-track"><div class="bar-fill rev-fill" style="width:1.8%"></div></div>
+            <span class="rev-count">4</span>
+          </div>
+        </div>
+      </div>
+
       <div class="gist-link">
         <p>¿Quieres ver el desglose completo con los 822 PRs/MRs, fechas y enlaces?</p>
         <a href="https://gist.github.com/Christihan-LB/2d7c7729d02ac56cefa4d0d5e0cedc94" target="_blank" class="btn btn-primary">
@@ -155,9 +191,17 @@ import Base from '../layouts/Base.astro';
 
   .stats-banner {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 16px;
     margin-bottom: 40px;
+  }
+
+  .review-stat {
+    border-color: #22c55e !important;
+  }
+
+  .review-stat .big-num {
+    color: #22c55e !important;
   }
 
   .big-stat {
@@ -276,6 +320,45 @@ import Base from '../layouts/Base.astro';
     color: var(--text-secondary);
   }
 
+  .review-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .review-intro {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .review-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .rev-label {
+    width: 160px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .rev-count {
+    width: 48px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #22c55e;
+    font-weight: 700;
+  }
+
+  .rev-fill {
+    background: #22c55e !important;
+  }
+
   .oca-list {
     list-style: none;
     padding: 0;
@@ -308,11 +391,14 @@ import Base from '../layouts/Base.astro';
 
   @media (max-width: 768px) {
     .stats-banner {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
   @media (max-width: 480px) {
+    .stats-banner {
+      grid-template-columns: repeat(2, 1fr);
+    }
     .type-label {
       width: auto;
       min-width: 60px;
@@ -327,6 +413,10 @@ import Base from '../layouts/Base.astro';
     }
     .module-item, .repo-item {
       flex-wrap: wrap;
+    }
+    .rev-label {
+      width: 100px;
+      font-size: 0.75rem;
     }
   }
 </style>
