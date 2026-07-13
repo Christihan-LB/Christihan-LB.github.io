@@ -1,0 +1,148 @@
+<section id="process">
+  <div class="container">
+    <span class="section-label reveal">Cómo trabajo</span>
+    <h2 class="section-title reveal" style="transition-delay: 100ms">De la idea a la automatización funcionando</h2>
+    <p class="section-subtitle reveal" style="transition-delay: 200ms">
+      Un proceso simple y transparente. Sin contratos largos ni sorpresas.
+    </p>
+    <div class="process-steps reveal" style="transition-delay: 300ms">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <h3>Agenda una llamada</h3>
+        <p>15 minutos sin costo. Me cuentas qué proceso quieres automatizar y te explico cómo puedo ayudarte.</p>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <h3>Diagnóstico y propuesta</h3>
+        <p>Analizo tu proceso actual, identifico lo que se puede automatizar y te entrego una propuesta con alcance, tiempo y presupuesto.</p>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <h3>Implementación</h3>
+        <p>Construyo la solución y la pruebo con datos reales. Te mantengo informado en cada etapa.</p>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step">
+        <div class="step-number">4</div>
+        <h3>Puesta en marcha</h3>
+        <p>Entregamos la solución funcionando, capacito a tu equipo y te quedo disponible para soporte y mejoras.</p>
+      </div>
+    </div>
+    <div class="process-cta reveal" style="transition-delay: 400ms">
+      <a href="https://calendly.com/claurelb" class="btn btn-primary" target="_blank">
+        Agenda tu llamada gratis
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  #process {
+    background: var(--bg-secondary);
+  }
+
+  .process-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 40px;
+  }
+
+  .process-step {
+    flex: 1;
+    text-align: center;
+    padding: 32px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.3s;
+  }
+
+  .process-step:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .step-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-family: var(--font-mono);
+  }
+
+  .process-step h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .process-step p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .process-arrow {
+    font-size: 1.5rem;
+    color: var(--accent);
+    padding: 40px 12px 0;
+    flex-shrink: 0;
+  }
+
+  .process-cta {
+    text-align: center;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    .process-steps {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .process-arrow {
+      transform: rotate(90deg);
+      padding: 4px 0;
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.reveal').forEach(el => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = parseInt(el.style.transitionDelay) || 0;
+            setTimeout(() => el.classList.add('visible'), delay);
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+    observer.observe(el);
+  });
+</script>
