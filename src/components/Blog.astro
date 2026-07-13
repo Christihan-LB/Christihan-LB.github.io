@@ -7,9 +7,13 @@
     </p>
     <div class="blog-list">
       <article class="blog-card">
-        <span class="blog-date">Julio 2026 · 7 min</span>
+        <div class="blog-meta">
+          <span class="blog-date">Julio 2026 · 7 min</span>
+          <span class="blog-tag">Automatización</span>
+        </div>
         <h3>Automatizar la facturación SUNAT: cómo eliminamos 6 horas semanales de captura manual</h3>
         <div class="blog-content">
+
           <p>
             Cada mes, cientos de empresas peruanas pierden horas-hombre capturando facturas una por una. 
             La SUNAT exige facturación electrónica desde 2018, pero eso solo resolvió el envío. 
@@ -17,29 +21,38 @@
             en una foto de WhatsApp, o incluso en papel. Alguien — generalmente un asistente contable — 
             los tipea a Odoo, a Excel o al sistema de facturación. Y ahí se pierden horas y se generan errores.
           </p>
-          <p>
-            Este artículo describe el pipeline que construí para una clínica en San Isidro, 
-            explica cada componente técnico, las decisiones de diseño, los resultados después de 
-            3 meses de operación, y las lecciones que aplico en cada proyecto de automatización 
-            documental. Si tu empresa maneja más de 200 facturas de proveedores al mes, esto te 
-            interesa.
-          </p>
 
-          <h4>El problema real</h4>
+          <div class="blog-stats">
+            <div class="stat">
+              <span class="stat-value">350</span>
+              <span class="stat-label">facturas/mes recibía la clínica</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">6 h</span>
+              <span class="stat-label">semanales de captura manual</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">8%</span>
+              <span class="stat-label">de error humano en ingreso</span>
+            </div>
+          </div>
+
+          <h4 class="section-head">
+            <span class="head-line"></span>
+            El problema real
+          </h4>
           <p>
             La clínica recibía ~350 facturas de proveedores al mes. Su proceso era: la asistente 
             contable abría cada PDF, copiaba RUC, razón social, monto, IGV, fecha de emisión y 
             los pegaba manualmente en Odoo. Una factura simple le tomaba 2-3 minutos. Pero cuando 
-            el comprobante incluía múltiples ítems o el PDF era escaneado (una imagen, no texto 
-            seleccionable), el tiempo se duplicaba. En total, invertía ~6 horas semanales solo 
-            en captura.
+            el comprobante incluía múltiples ítems o el PDF era escaneado, el tiempo se duplicaba. 
+            En total, invertía ~6 horas semanales solo en captura.
           </p>
           <p>
-            Además del tiempo, estaba el error humano. Medimos durante un mes: el 8% de las 
-            facturas ingresadas tenían al menos un error: montos mal tipeados, RUCs intercambiados, 
-            facturas que quedaban sin registrar porque el PDF se extraviaba en la bandeja de 
-            entrada. Cada error significaba una discrepancia contable que alguien tenía que 
-            detectar y corregir después — duplicando el trabajo.
+            Medimos durante un mes: el 8% de las facturas ingresadas tenían al menos un error: 
+            montos mal tipeados, RUCs intercambiados, facturas que quedaban sin registrar porque 
+            el PDF se extraviaba en la bandeja de entrada. Cada error significaba una discrepancia 
+            contable que alguien tenía que detectar y corregir después — duplicando el trabajo.
           </p>
           <p>
             Este patrón se repite en casi todas las empresas peruanas con las que he trabajado. 
@@ -49,494 +62,385 @@
             que hay que cerrar.
           </p>
 
-          <h4>La solución: pipeline de 6 etapas</h4>
+          <div class="divider">
+            <span class="divider-dot"></span>
+          </div>
+
+          <h4 class="section-head">
+            <span class="head-line"></span>
+            La solución: pipeline de 6 etapas
+          </h4>
           <p>
             Construí un pipeline automatizado en Python que procesa facturas desde que llegan por 
             correo hasta que se registran en Odoo. No inventé nada nuevo — usé herramientas 
             existentes y las conecté con reglas de negocio específicas para la realidad contable 
-            peruana. El pipeline tiene 6 etapas bien definidas:
-          </p>
-          <p>
-            <strong>Etapa 1 — Recepción:</strong> La clínica abrió un correo Gmail exclusivo para 
-            facturas (facturas@clinica.pe). Todos los proveedores fueron reentrenados para enviar 
-            sus comprobantes ahí. Un script corre como un servicio systemd cada 5 minutos, se 
-            conecta vía Gmail API con OAuth 2.0, y descarga los adjuntos de los correos no leídos. 
-            Usamos etiquetas de Gmail para marcar los correos procesados y evitar reprocesarlos.
-          </p>
-          <p>
-            <strong>Etapa 2 — Extracción:</strong> Aquí hay dos caminos. Si el PDF es digital 
-            (tiene texto seleccionable), usamos pdfplumber, que extrae el texto con coordenadas 
-            precisas. Si el PDF es escaneado (imagen), entra OpenCV + Tesseract OCR para 
-            convertir la imagen a texto. La detección es automática: pdfplumber intenta extraer 
-            texto, y si el resultado tiene menos de 50 caracteres, asumimos que es escaneado y 
-            saltamos a OCR. En producción, el 70% de los PDFs eran digitales y el 30% escaneados. 
-            El OCR con Tesseract entrenado para español alcanza ~92% de precisión en caracteres 
-            con documentos SUNAT estándar.
-          </p>
-          <p>
-            <strong>Etapa 3 — Parseo:</strong> El texto extraído no sirve si no podemos identificar 
-            los campos. El formato de factura SUNAT tiene una estructura semi-estándar: el RUC del 
-            emisor aparece como "RUC: 20123456789", el monto total como "Total: S/ 1,234.56", 
-            el IGV como "IGV (18%): S/ 222.22". Usé expresiones regulares para cada campo, 
-            con validaciones cruzadas: por ejemplo, el monto total debe coincidir con la suma 
-            del subtotal más IGV (con tolerancia de S/ 1 por redondeo). El parser también 
-            identifica moneda (Soles o Dólares), tipo de comprobante (factura, boleta, nota 
-            de crédito), y serie-número correlativo.
-          </p>
-          <p>
-            <strong>Etapa 4 — Validación:</strong> Antes de crear la factura en Odoo, validamos 
-            los datos contra los catálogos oficiales de SUNAT. Verificamos que el RUC exista y 
-            esté activo (consulta a SUNAT vía API pública), que el tipo de comprobante sea 
-            válido, que la moneda esté en el catálogo 02, que el código de tributo (IGV, ISC) 
-            sea correcto. También validaciones de negocio: ¿el proveedor ya existe en Odoo? 
-            Si no, se crea automáticamente con los datos extraídos. ¿La factura ya fue registrada? 
-            Comparamos RUC + serie + número contra la base de datos para evitar duplicados.
-          </p>
-          <p>
-            <strong>Etapa 5 — Registro en Odoo:</strong> Con los datos validados, llamamos a la 
-            API de Odoo (xmlrpc, que es la interfaz más estable para integraciones externas) 
-            para crear la factura de proveedor. El PDF original se adjunta al chatter del 
-            registro mediante el modelo ir.attachment, vinculado al account.move creado. 
-            Si el proveedor tiene un plazo de pago configurado en Odoo, la fecha de vencimiento 
-            se calcula automáticamente.
-          </p>
-          <p>
-            <strong>Etapa 6 — Excepción:</strong> Si alguna etapa falla (OCR de baja calidad, 
-            validación contra SUNAT que no pasa, RUC no encontrado), la factura no se pierde. 
-            Se deriva a una bandeja de revisión manual: un dashboard simple en Streamlit donde 
-            la asistente ve el PDF original, el error detectado, y puede corregir los datos 
-            manualmente. Una vez corregidos, el registro en Odoo se completa. En producción, 
-            el 94% de las facturas pasan sin intervención; el 6% restante requiere revisión 
-            manual de menos de 30 segundos cada una.
+            peruana.
           </p>
 
-          <h4>Infraestructura y costos</h4>
+          <div class="pipeline">
+            <div class="pipe-step">
+              <div class="pipe-number">1</div>
+              <div class="pipe-body">
+                <strong>Recepción</strong>
+                <p>Gmail API + systemd timer cada 5 min. Etiquetas para evitar reprocesos.</p>
+              </div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-number">2</div>
+              <div class="pipe-body">
+                <strong>Extracción</strong>
+                <p>pdfplumber (digital) o Tesseract OCR (escaneado). 70% digital, 30% escaneado.</p>
+              </div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-number">3</div>
+              <div class="pipe-body">
+                <strong>Parseo</strong>
+                <p>Reglas con validación cruzada: monto total = subtotal + IGV (tolerancia S/ 1).</p>
+              </div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-number">4</div>
+              <div class="pipe-body">
+                <strong>Validación</strong>
+                <p>Contra catálogos SUNAT: RUC activo, moneda, tributo. Sin duplicados.</p>
+              </div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-number">5</div>
+              <div class="pipe-body">
+                <strong>Registro Odoo</strong>
+                <p>xmlrpc + ir.attachment. PDF al chatter. Plazo de pago automático.</p>
+              </div>
+            </div>
+            <div class="pipe-step">
+              <div class="pipe-number">6</div>
+              <div class="pipe-body">
+                <strong>Excepción</strong>
+                <p>Dashboard Streamlit. El 94% pasa sin intervención. 6% requiere revisión de 30s.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider">
+            <span class="divider-dot"></span>
+          </div>
+
+          <h4 class="section-head">
+            <span class="head-line"></span>
+            Infraestructura y costos
+          </h4>
           <p>
             El pipeline corre en una VPS de DigitalOcean de $10/mes (2GB RAM, 1 vCPU, 50GB SSD). 
-            El script principal está escrito en Python 3.11 con las librerías: pdfplumber, 
-            pytesseract, opencv-python, requests, y un módulo propio para la comunicación con 
-            Odoo vía xmlrpc. La base de datos de seguimiento (log de procesamiento, facturas 
-            procesadas, errores) usa SQLite. Programamos un cron con systemd timer que ejecuta 
-            el script cada 5 minutos. El consumo de CPU en pico es ~40%, y la memoria no supera 
-            los 500MB. El desarrollo completo tomó 3 semanas, incluyendo 2 semanas de pruebas 
-            con facturas históricas para ajustar el parser a las variaciones de formato entre 
-            diferentes emisores.
+            El stack: Python 3.11, pdfplumber, pytesseract, opencv-python, sqlite. Consumo de 
+            CPU en pico ~40%, memoria bajo 500MB. Desarrollo: 3 semanas, incluyendo 2 de 
+            pruebas con facturas históricas para ajustar el parser a variaciones de formato 
+            entre diferentes emisores.
           </p>
 
-          <h4>Resultados después de 3 meses</h4>
-          <p>
-            La captura manual se redujo a cero. La asistente contable ahora solo revisa la 
-            bandeja de excepciones (~20 facturas al mes) y dedica el tiempo ahorrado a tareas 
-            de análisis financiero que antes no podía hacer. La tasa de error bajó de 8% a 0.5% 
-            — todos los errores residuales son de facturas escaneadas con mala calidad donde 
-            el OCR no pudo leer algún dígito. El ahorro directo es de S/ 1,800 mensuales en 
-            horas del asistente contable, más el ahorro indirecto de no tener que corregir 
-            discrepancias contables. El pipeline ha procesado ~1,050 facturas en 3 meses con 
-            un uptime del 99.7%.
-          </p>
+          <div class="result-box">
+            <div class="result-grid">
+              <div>
+                <span class="result-value">S/ 1,800</span>
+                <span class="result-label">ahorro mensual</span>
+              </div>
+              <div>
+                <span class="result-value">99.7%</span>
+                <span class="result-label">uptime en 3 meses</span>
+              </div>
+              <div>
+                <span class="result-value">~1,050</span>
+                <span class="result-label">facturas procesadas</span>
+              </div>
+              <div>
+                <span class="result-value">0.5%</span>
+                <span class="result-label">tasa de error final</span>
+              </div>
+            </div>
+          </div>
 
-          <h4>Lecciones aprendidas</h4>
-          <p>
-            <strong>No necesitas IA para automatizar.</strong> Hay una tendencia a pensar que 
-            todo necesita Machine Learning. pdfplumber resolvió el 90% del problema sin ningún 
-            modelo. El OCR (Tesseract) solo entra en casos específicos. La inteligencia real 
-            está en las reglas de validación que reflejan cómo funciona la contabilidad peruana.
-          </p>
-          <p>
-            <strong>El formato SUNAT no es tan estándar como parece.</strong> Cada emisor 
-            tiene variaciones: algunos ponen "RUC" y otros "R.U.C.", algunos usan "Monto 
-            Total" y otros "Total a Pagar". El parser tuvo que entrenarse con ~400 facturas 
-            reales de diferentes proveedores para cubrir las variaciones más comunes.
-          </p>
-          <p>
-            <strong>El 6% de excepción es aceptable.</strong> Intentar llegar a 100% de 
-            automatización habría requerido 3 meses más de desarrollo para ganar solo 6 
-            puntos porcentuales. La bandeja de revisión manual es una solución pragmática 
-            que mantiene el ROI alto.
-          </p>
-          <p>
-            <strong>El ROI se mide en semanas, no en años.</strong> Incluyendo desarrollo 
-            e infraestructura, el proyecto costó ~S/ 5,000. El ahorro mensual es de 
-            S/ 1,800. El retorno de inversión se alcanzó en menos de 3 meses.
-          </p>
+          <h4 class="section-head">
+            <span class="head-line"></span>
+            Lecciones aprendidas
+          </h4>
+          <div class="lessons">
+            <div class="lesson">
+              <span class="lesson-icon">→</span>
+              <div>
+                <strong>No necesitas IA para automatizar.</strong> pdfplumber resolvió el 90% del 
+                problema sin modelos. El valor está en las reglas de validación contable peruana.
+              </div>
+            </div>
+            <div class="lesson">
+              <span class="lesson-icon">→</span>
+              <div>
+                <strong>El formato SUNAT no es tan estándar.</strong> Cada emisor tiene variaciones. 
+                El parser se entrenó con ~400 facturas reales.
+              </div>
+            </div>
+            <div class="lesson">
+              <span class="lesson-icon">→</span>
+              <div>
+                <strong>6% de excepción es aceptable.</strong> Llegar a 100% habría costado 3 meses 
+                más. La bandeja manual es pragmática y mantiene el ROI alto.
+              </div>
+            </div>
+            <div class="lesson">
+              <span class="lesson-icon">→</span>
+              <div>
+                <strong>ROI en semanas.</strong> Proyecto: S/ 5,000. Ahorro: S/ 1,800/mes. 
+                Recuperación en menos de 3 meses.
+              </div>
+            </div>
+          </div>
+
         </div>
-        <span class="blog-tag">Automatización</span>
       </article>
 
       <article class="blog-card">
-        <span class="blog-date">Junio 2026 · 7 min</span>
+        <div class="blog-meta">
+          <span class="blog-date">Junio 2026 · 7 min</span>
+          <span class="blog-tag">Odoo</span>
+        </div>
         <h3>Migración Odoo v13 → v18: 3 semanas, 60 módulos y 2.8M de registros después</h3>
         <div class="blog-content">
+
           <p>
             En marzo de 2026 completé la migración de un cliente de Odoo 13 Enterprise a 
-            Odoo 18. No era una migración cualquiera: el cliente había acumulado 5 años de 
-            personalizaciones, módulos de terceros, procesos que "funcionaban pero nadie 
-            sabía cómo", y una base de datos con más de 2.8 millones de movimientos contables. 
-            El salto de v13 a v18 implica atravesar 5 versiones mayores, cada una con sus 
-            breaking changes, nuevos modelos y APIs deprecadas. La mala práctica más común 
-            es migrar todo de golpe sin auditar. La correcta es auditar, limpiar y migrar 
-            en capas. Este artículo detalla las 4 fases del proyecto, las decisiones técnicas 
-            y los resultados.
+            Odoo 18. El salto de v13 a v18 implica 5 versiones mayores, cada una con 
+            breaking changes, nuevos modelos y APIs deprecadas. La mala práctica más común: 
+            migrar todo de golpe sin auditar. La correcta: auditar, limpiar y migrar en capas.
           </p>
 
-          <h4>Fase 1: Auditoría de módulos y alcance (5 días)</h4>
-          <p>
-            Antes de migrar un solo dato, necesitábamos saber qué estábamos migrando. 
-            Levantamos todos los módulos instalados en producción: 60 en total. La 
-            clasificación fue reveladora:
-          </p>
-          <p>
-            <strong>12 módulos Odoo estándar</strong> (account, sale, stock, purchase, 
-            mrp, hr, project, mail, calendar, web, base, portal). De estos, la mayoría 
-            no presentaba problemas porque Odoo mantiene rutas de migración oficiales.
-          </p>
-          <p>
-            <strong>28 módulos de OCA</strong> (Odoo Community Association). Aquí la 
-            situación era mixta: algunos como account_reports y stock_sms ya estaban 
-            incorporados en el core de v18, otros tenían versiones mantenidas en sus 
-            ramas correspondientes, y unos pocos habían sido reemplazados por módulos 
-            más modernos.
-          </p>
-          <p>
-            <strong>12 módulos personalizados</strong> por diferentes implementadores 
-            a lo largo de los años. Cada uno con su propio estilo de código, nivel de 
-            documentación (de nula a mínima) y calidad variable. Algunos ni siquiera 
-            tenían autor identificado en los manifest.
-          </p>
-          <p>
-            <strong>8 módulos de terceros</strong> adquiridos en Odoo Apps Store. 
-            Verificamos si el editor ofrecía versión para v18 y si nuestro contrato 
-            de mantenimiento cubría la actualización.
-          </p>
-          <p>
-            Evaluamos cada módulo contra tres criterios: (1) ¿sigue en uso activo? 
-            Revisamos logs de acceso, consultamos a los usuarios clave, y verificamos 
-            si los datos asociados tenían actividad reciente. (2) ¿tiene versión 
-            disponible para v18? Si no, ¿podemos migrarlo nosotros o necesitamos 
-            reemplazarlo? (3) ¿podemos reemplazarlo con funcionalidad estándar de 
-            v18? Muchos módulos personalizados resolvían problemas que Odoo ya 
-            solucionó en versiones posteriores.
-          </p>
-          <p>
-            El resultado: solo 32 módulos sobrevivieron al filtro. Los otros 28 se 
-            eliminaron. Algunos ejemplos concretos: un módulo de reportes de inventario 
-            que no se usaba desde 2022 (confirmado con logs), un módulo de aprobación 
-            de gastos que v18 reemplaza con su flujo nativo, y tres módulos OCA que 
-            habían sido superados por la evolución del core. Esta limpieza inicial 
-            redujo el trabajo de migración en casi un 50%.
-          </p>
+          <div class="blog-stats">
+            <div class="stat">
+              <span class="stat-value">60</span>
+              <span class="stat-label">módulos auditados</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">28</span>
+              <span class="stat-label">módulos eliminados</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">2.8M</span>
+              <span class="stat-label">registros migrados</span>
+            </div>
+          </div>
 
-          <h4>Fase 2: Limpieza de datos (3 días)</h4>
-          <p>
-            Los datos sucios son el enemigo silencioso de cualquier migración. Encontramos 
-            casos que ilustran por qué esta fase es crítica:
-          </p>
-          <p>
-            <strong>1,200 productos</strong> creados en 2020 con costo cero y stock cero 
-            que nunca registraron un movimiento. Eran productos fantasma, probablemente 
-            importaciones masivas de un archivo Excel que nunca se depuraron. En v13 
-            ocupaban espacio en tablas de búsqueda; en v18 seguirían ocupándolo y 
-            además ralentizarían las vistas de producto.
-          </p>
-          <p>
-            <strong>4,500 contactos duplicados</strong> identificados por RUC repetido 
-            pero con diferente razón social (ej: "Clínica San Pablo S.A.C." vs 
-            "CLINICA SAN PABLO SAC"). Unificamos usando el RUC como clave primaria 
-            y conservando el contacto con más actividad reciente.
-          </p>
-          <p>
-            <strong>87 órdenes de compra</strong> en estado "borrador" con fecha de 2019. 
-            Eran pedidos que nunca se confirmaron pero quedaron huérfanos en el sistema. 
-            Se cancelaron y archivaron.
-          </p>
-          <p>
-            <strong>34 impuestos configurados</strong> en el plan contable, pero solo 5 
-            en uso activo. Los impuestos no utilizados se desactivaron para evitar 
-            confusiones en la migración.
-          </p>
-          <p>
-            La limpieza nos tomó 3 días y probablemente nos ahorró 2 semanas de debugging 
-            en fases posteriores. La regla que aplico ahora en cada migración: limpia 
-            antes de migrar, no después. Un registro basura en v13 se multiplica en v18 
-            porque los nuevos modelos tienen relaciones más estrictas y validaciones 
-            más rigurosas.
-          </p>
+          <div class="phases">
+            <details class="phase">
+              <summary class="phase-header">
+                <span class="phase-num">Fase 1</span>
+                <span class="phase-title">Auditoría de módulos</span>
+                <span class="phase-duration">5 días</span>
+                <span class="phase-arrow">▾</span>
+              </summary>
+              <div class="phase-body">
+                <p>Levantamos 60 módulos: 12 estándar, 28 OCA, 12 personalizados, 8 de terceros. 
+                Evaluamos cada uno contra 3 criterios: (1) ¿sigue en uso activo? (logs + consulta 
+                a usuarios); (2) ¿tiene versión v18?; (3) ¿puede reemplazarse con funcionalidad 
+                estándar de v18? Resultado: solo 32 sobrevivieron. La limpieza redujo el trabajo 
+                de migración en 50%.</p>
+                <p class="phase-example">Ejemplo: módulo de reportes sin uso desde 2022, módulo 
+                de aprobación reemplazado por flujo nativo de v18, 3 módulos OCA superados por 
+                el core.</p>
+              </div>
+            </details>
+            <details class="phase">
+              <summary class="phase-header">
+                <span class="phase-num">Fase 2</span>
+                <span class="phase-title">Limpieza de datos</span>
+                <span class="phase-duration">3 días</span>
+                <span class="phase-arrow">▾</span>
+              </summary>
+              <div class="phase-body">
+                <p>1,200 productos fantasma (creados en 2020 sin movimientos). 4,500 contactos 
+                duplicados por RUC. 87 órdenes de compra en borrador desde 2019. 34 impuestos 
+                configurados, solo 5 en uso. La limpieza nos ahorró ~2 semanas de debugging 
+                posterior.</p>
+                <p class="phase-example">Regla: limpia antes de migrar, no después. Un registro 
+                basura en v13 se multiplica en v18 porque los nuevos modelos tienen relaciones 
+                más estrictas.</p>
+              </div>
+            </details>
+            <details class="phase">
+              <summary class="phase-header">
+                <span class="phase-num">Fase 3</span>
+                <span class="phase-title">Migración técnica</span>
+                <span class="phase-duration">8 días</span>
+                <span class="phase-arrow">▾</span>
+              </summary>
+              <div class="phase-body">
+                <p>OpenUpgrade para el core. La tabla account_move_line (2.8M registros) migró 
+                en 45 min. Cuello de botella: RAM. Subir de 2GB a 4GB redujo el tiempo total 
+                de 4h a 1.5h. Módulos personalizados requirieron reescritura parcial por 
+                cambios de API: onchange → computed dependables, QWeb con nueva sintaxis, 
+                record rules con expresiones, OWL reemplazó jQuery.</p>
+              </div>
+            </details>
+            <details class="phase">
+              <summary class="phase-header">
+                <span class="phase-num">Fase 4</span>
+                <span class="phase-title">Testing y producción</span>
+                <span class="phase-duration">5 días</span>
+                <span class="phase-arrow">▾</span>
+              </summary>
+              <div class="phase-body">
+                <p>Dump anonimizado. Usuarios clave probaron facturación, inventario, compras 
+                y contabilidad. 14 bugs encontrados, 12 corregidos antes del corte. Corte 
+                viernes 6pm, servidor v18 online a las 10:30pm. Lunes operando normal.</p>
+              </div>
+            </details>
+          </div>
 
-          <h4>Fase 3: Migración técnica (8 días)</h4>
-          <p>
-            Con los módulos definidos y los datos limpios, comenzó la migración técnica. 
-            Usamos la siguiente estrategia:
-          </p>
-          <p>
-            <strong>Core y módulos Odoo:</strong> OpenUpgrade fue la herramienta principal. 
-            Ejecutamos scripts de pre-migración para detectar inconsistencias (registros 
-            huérfanos, relaciones rotas) antes de la migración principal. La tabla 
-            account_move_line, con 2.8 millones de registros, fue la más pesada: la 
-            migración tomó 45 minutos. Descubrimos que el cuello de botella no era 
-            PostgreSQL (CPU al 60%), sino la memoria RAM del servidor de migración. 
-            Pasamos de 2GB a 4GB y el tiempo total de migración bajó de 4 horas a 
-            1.5 horas.
-          </p>
-          <p>
-            <strong>Módulos OCA:</strong> Para los que tenían versión en su rama v18, 
-            simplemente cambiamos la rama del repositorio y ejecutamos la migración 
-            estándar. Para los que no tenían versión, buscamos alternativas en OCA o 
-            los reemplazamos con funcionalidad core.
-          </p>
-          <p>
-            <strong>Módulos personalizados:</strong> Aquí estuvo el trabajo real. 
-            Tuvimos que reescribir varios componentes porque la API de Odoo cambió 
-            significativamente entre v13 y v18. Los cambios más relevantes:
-          </p>
-          <p>
-            — Los onchange() fueron reemplazados por computed dependables con 
-            @api.depends. El código se volvió más declarativo y predecible.
-          </p>
-          <p>
-            — Las vistas QWeb heredadas requerían actualización porque la sintaxis 
-            de xpath cambió. Los reportes en formato viejo (webkit) dejaron de 
-            funcionar y tuvieron que convertirse al nuevo motor de QWeb.
-          </p>
-          <p>
-            — Los record rules en v18 permiten expresiones en lugar de solo domains. 
-            Esto cambió la lógica de seguridad de varios módulos.
-          </p>
-          <p>
-            — Los widgets de JavaScript (OWL) reemplazaron a los viejos widgets 
-            basados en jQuery. Los módulos con personalización frontend requirieron 
-            reescritura parcial.
-          </p>
+          <div class="result-box">
+            <div class="result-grid">
+              <div>
+                <span class="result-value">$300/mes</span>
+                <span class="result-label">ahorro en suscripciones legacy</span>
+              </div>
+              <div>
+                <span class="result-value">40%</span>
+                <span class="result-label">menos módulos que mantener</span>
+              </div>
+              <div>
+                <span class="result-value">14</span>
+                <span class="result-label">bugs detectados en testing</span>
+              </div>
+            </div>
+          </div>
 
-          <h4>Fase 4: Testing y puesta en producción (5 días)</h4>
-          <p>
-            Probamos con un dump anonimizado de producción (se reemplazaron nombres reales, 
-            RUCs y montos, pero se mantuvo la estructura y volumen de datos). El cliente 
-            asignó a dos personas clave para la validación: la contadora principal y el 
-            jefe de almacén. Su criterio era simple: "si algo se ve diferente o no funciona 
-            como antes, lo reportamos". Probaron 4 procesos críticos:
-          </p>
-          <p>
-            — <strong>Facturación:</strong> crear, enviar, registrar pago y cancelar 
-            facturas. Tanto de venta como de compra.
-          </p>
-          <p>
-            — <strong>Inventario:</strong> recepción de mercadería, transferencias entre 
-            almacenes, inventario cíclico y ajustes.
-          </p>
-          <p>
-            — <strong>Compras:</strong> solicitud de cotización, orden de compra, 
-            recepción y facturación de proveedor.
-          </p>
-          <p>
-            — <strong>Contabilidad:</strong> asientos contables, cierre de mes, 
-            reportes financieros y conciliación bancaria.
-          </p>
-          <p>
-            Encontramos 14 bugs en total. 12 se corrigieron antes del corte: problemas 
-            de herencia de vistas, un campo computed que no se recalculaba correctamente, 
-            y algunos reportes con formato incorrecto. Los 2 restantes eran features que 
-            existían en v13 pero Odoo no incluyó en v18 (un reporte personalizado de 
-            utilidad por producto y un flujo de aprobación multicompra). Se resolvieron 
-            con módulos ligeros que implementaban la funcionalidad faltante.
-          </p>
-          <p>
-            El corte se programó un viernes a las 6:00 PM. Detuvimos el servidor de 
-            producción, hicimos el backup final, ejecutamos la migración, y abrimos 
-            el servidor de v18 a las 10:30 PM. El sábado y domingo se usaron para 
-            pruebas adicionales con los usuarios clave. El lunes siguiente el cliente 
-            operaba normalmente en v18.
-          </p>
-
-          <h4>Resultados y aprendizajes</h4>
-          <p>
-            El ERP migrado quedó más rápido, con menos módulos, más seguro, y con un 
-            equipo interno capacitado en la nueva versión. Para el cliente, el beneficio 
-            más concreto fue dejar de pagar mantenimiento por módulos legacy que ya no 
-            necesitaban (ahorro de ~$300/mes en suscripciones innecesarias).
-          </p>
-          <p>
-            La lección más importante: la migración no es un problema técnico, es un 
-            problema de negocio. Cada módulo que sobrevive hay que justificarlo con el 
-            cliente. Si no se usa, se elimina. Si se usa poco, se evalúa si realmente 
-            vale la pena migrarlo. El trabajo técnico es la parte fácil; lo difícil es 
-            tener la disciplina de auditar y limpiar antes de migrar.
-          </p>
         </div>
-        <span class="blog-tag">Odoo</span>
       </article>
 
       <article class="blog-card">
-        <span class="blog-date">Mayo 2026 · 8 min</span>
+        <div class="blog-meta">
+          <span class="blog-date">Mayo 2026 · 8 min</span>
+          <span class="blog-tag">Productividad</span>
+        </div>
         <h3>Automatización sin código: 3 procesos que cualquier PYME peruana puede delegar hoy</h3>
         <div class="blog-content">
+
           <p>
-            "No tenemos área de sistemas" es la frase que más escucho en mi consultoría 
-            con empresas peruanas. La asumen como una limitación, como si la automatización 
-            solo fuera posible con un equipo de ingenieros. La realidad es muy distinta: con 
+            "No tenemos área de sistemas" es la frase que más escucho. La asumen como limitación, 
+            como si la automatización solo fuera posible con ingenieros. La realidad: con 
             herramientas visuales como n8n, Make.com y Google Apps Script, cualquier empresa 
-            puede automatizar procesos sin escribir una línea de código. He visto a colegios, 
-            clínicas, estudios de abogados y distribuidoras implementar automatizaciones que 
-            les ahorran 10+ horas semanales, todo sin contratar un solo desarrollador.
-          </p>
-          <p>
-            Este artículo describe 3 casos reales en los que trabajé, con el problema, la 
-            solución técnica (en lenguaje simple) y los resultados medibles. Al final, 
-            propongo un marco para que identifiques los procesos automatizables en tu 
-            propia empresa.
+            puede automatizar sin escribir código. 3 casos reales:
           </p>
 
-          <h4>Caso 1: Estudio de abogados en Miraflores — notificaciones judiciales</h4>
-          <p>
-            <strong>El problema:</strong> Un estudio con 8 abogados recibía ~80 notificaciones 
-            judiciales electrónicas al mes. El proceso manual era: la asistente abría cada 
-            correo, leía el asunto para identificar el tipo de notificación (notificación 
-            simple, resolución, cédula, oficio), determinaba qué abogado debía atenderlo 
-            según la especialidad (penal, civil, laboral, corporativo) y la carga laboral 
-            actual, reenviaba el correo con instrucciones, y archivaba manualmente el PDF 
-            en la carpeta de Google Drive del caso correspondiente.
-          </p>
-          <p>
-            Este proceso le tomaba a la asistente 5-7 minutos por notificación. En un mes 
-            de ~80 notificaciones, eso significaba entre 6.5 y 9 horas de trabajo puramente 
-            administrativo. Pero además, había errores: notificaciones que llegaban al 
-            abogado equivocado, PDFs que se guardaban en la carpeta incorrecta, y en 
-            casos extremos, notificaciones que pasaban desapercibidas porque el correo 
-            se perdía en la bandeja de entrada.
-          </p>
-          <p>
-            <strong>La solución:</strong> Diseñé un workflow en n8n con tres nodos 
-            principales. El primer nodo es un trigger de Gmail (vía webhook) que monitorea 
-            la bandeja de entrada etiquetando correos cuyo asunto contenga palabras clave 
-            como "Notificación", "Resolución", "Cédula" u "Oficio". El segundo nodo es un 
-            clasificador basado en reglas: si el asunto contiene "penal" o "Juzgado Penal", 
-            asigna al abogado A; si contiene "laboral", al abogado B, y así sucesivamente. 
-            También considera la carga laboral (un contador simple de casos activos por 
-            abogado). El tercer nodo ejecuta dos acciones: envía un WhatsApp con el 
-            resumen del caso y un enlace al PDF (usando WhatsApp Business API a través 
-            de un proveedor local como WATI o Meta Cloud API), y guarda el PDF en la 
-            carpeta de Google Drive del caso (creando la carpeta si no existe, usando 
-            el nombre del caso extraído del asunto del correo).
-          </p>
-          <p>
-            <strong>El resultado:</strong> La asistente pasó de intermediaria a supervisora. 
-            Ya no toca cada notificación, solo revisa el log de procesamiento (5 minutos 
-            al día). El tiempo de respuesta bajó de horas a minutos: cuando llega una 
-            notificación, el abogado recibe el WhatsApp en menos de 2 minutos. En 6 meses 
-            de operación, cero notificaciones perdidas y cero asignaciones incorrectas.
-          </p>
+          <div class="case-card">
+            <div class="case-header">
+              <span class="case-number">Caso 1</span>
+              <span class="case-title">Estudio de abogados · Miraflores</span>
+            </div>
+            <div class="case-body">
+              <div class="case-section">
+                <strong>Problema:</strong> ~80 notificaciones judiciales/mes. Asistente abría cada 
+                correo, clasificaba por especialidad, reenviaba al abogado, archivaba el PDF. 
+                5-7 min por notificación = ~8 horas mensuales.
+              </div>
+              <div class="case-section">
+                <strong>Solución:</strong> Workflow n8n con 3 nodos: trigger Gmail por palabras 
+                clave → clasificador por especialidad + carga laboral → WhatsApp Business API + 
+                Google Drive. Respuesta en &lt;2 min.
+              </div>
+              <div class="case-result">
+                <span>0 horas de intermediación</span>
+                <span>0 notificaciones perdidas en 6 meses</span>
+              </div>
+            </div>
+          </div>
 
-          <h4>Caso 2: Colegio privado en San Miguel — reportes de notas bimestrales</h4>
-          <p>
-            <strong>El problema:</strong> Cada bimestre, el colegio enviaba reportes de 
-            notas a los padres de ~600 alumnos. El proceso era una cadena de tareas manuales 
-            que involucraba a 3 personas y tomaba 3 días completos: descargar las notas 
-            desde el SIAGIE (Sistema de Información de Apoyo a la Gestión de la Institución 
-            Educativa, del Ministerio de Educación), exportarlas a Excel, formatear el 
-            archivo manualmente para que coincidiera con la plantilla del colegio, imprimir 
-            600 copias en hojas membretadas, doblar cada una, meterlas en sobres con el 
-            nombre del alumno, y entregarlas al alumno para que las lleve a casa.
-          </p>
-          <p>
-            Además del tiempo, el proceso generaba errores: padres que recibían el reporte 
-            de otro hijo, sobres mal rotulados, y alumnos que "perdían" el reporte en el 
-            camino. El colegio estimaba que el 5% de los reportes tenían que reimprimirse 
-            por algún error.
-          </p>
-          <p>
-            <strong>La solución:</strong> Automatizamos con Google Apps Script, que se 
-            integra nativamente con el ecosistema Google Workspace (el colegio usaba 
-            Gmail corporativo y Google Drive). El flujo es: la administradora descarga 
-            el Excel del SIAGIE y lo pega en una hoja de cálculo de Google Sheets 
-            compartida. Un script (programado con un trigger basado en tiempo) detecta 
-            los datos nuevos y ejecuta las siguientes acciones: (1) toma los datos de 
-            cada alumno (nombre, curso, notas en cada competencia, promedio, comentario 
-            del tutor); (2) los inserta en una plantilla de Google Docs pre-diseñada 
-            con marcadores de posición (usando el método replaceText de Google Docs API); 
-            (3) exporta el documento a PDF; (4) envía el PDF por correo electrónico al 
-            padre/madre registrado en el SIAGIE, con copia al tutor del alumno.
-          </p>
-          <p>
-            <strong>El resultado:</strong> El proceso que tomaba 3 días ahora toma 45 
-            minutos. La administradora solo pega los datos en la hoja de cálculo y 
-            presiona un botón. El script se encarga de todo lo demás. El colegio ha 
-            usado el sistema durante 6 bimestres consecutivos sin una sola falla. 
-            Los padres reciben el reporte por correo y pueden archivarlo digitalmente. 
-            El colegio ahorra S/ 300 bimestrales en papel e impresión.
-          </p>
+          <div class="case-card">
+            <div class="case-header">
+              <span class="case-number">Caso 2</span>
+              <span class="case-title">Colegio privado · San Miguel</span>
+            </div>
+            <div class="case-body">
+              <div class="case-section">
+                <strong>Problema:</strong> Reportes de notas bimestrales para 600 alumnos. 
+                Descargar SIAGIE → formatear en Word → imprimir → doblar → sobres → entregar. 
+                3 personas, 3 días completos.
+              </div>
+              <div class="case-section">
+                <strong>Solución:</strong> Google Apps Script: datos del SIAGIE a Google Sheets, 
+                plantilla en Docs con marcadores, PDF automático por alumno, envío por Gmail. 
+                45 minutos de trabajo.
+              </div>
+              <div class="case-result">
+                <span>3 días → 45 min</span>
+                <span>S/ 300 bimestrales ahorrados en papel</span>
+              </div>
+            </div>
+          </div>
 
-          <h4>Caso 3: Distribuidora de alimentos en Surco — conciliación bancaria</h4>
-          <p>
-            <strong>El problema:</strong> Una distribuidora de alimentos recibía ~120 
-            pagos diarios por diversos canales: transferencias bancarias, Yape, POS 
-            (Visa/Mastercard) y efectivo. Su asistente contable pasaba 2 horas cada 
-            tarde cruzando manualmente el extracto bancario contra las facturas emitidas 
-            en Odoo. Cuando un pago no coincidía exactamente con una factura (un cliente 
-            pagaba dos facturas juntas, o pagaba un monto parcial), tenía que buscar 
-            manualmente en el sistema, revisar correos, y llamar al cliente para 
-            identificar el pago. Esto añadía horas adicionales y retrasaba la 
-            conciliación hasta 3 días después del cierre del mes.
-          </p>
-          <p>
-            <strong>La solución:</strong> Conectamos tres sistemas: Odoo (facturación y 
-            contabilidad), el portal de servicios del BCP (banco principal de la empresa) 
-            y n8n como orquestador. El workflow nocturno (programado a las 10 PM) hace 
-            lo siguiente: (1) se conecta al portal del BCP vía API (usando las credenciales 
-            proporcionadas por el banco) y descarga el extracto del día en formato CSV; 
-            (2) consulta a Odoo todas las facturas en estado "Esperando pago" con fecha 
-            de emisión hasta el día actual; (3) cruza cada movimiento bancario contra 
-            las facturas usando dos criterios: monto exacto y RUC del cliente; (4) si 
-            encuentra una coincidencia perfecta, crea el asiento de pago en Odoo y 
-            concilia automáticamente; (5) si un pago no coincide con ninguna factura 
-            (pago parcial, pago agrupado, o pago no identificado), lo envía a un canal 
-            de Slack donde la contadora revisa y resuelve manualmente.
-          </p>
-          <p>
-            <strong>El resultado:</strong> La conciliación diaria pasó de 2 horas a 5 
-            minutos de supervisión. La contadora solo revisa las excepciones (~15% de 
-            los pagos, principalmente por pagos agrupados). El cierre de mes ahora se 
-            completa el primer día hábil, no al tercero. La distribuidora implementó 
-            el sistema en enero de 2025 y desde entonces ha conciliado más de 25,000 
-            transacciones automáticamente con una tasa de acierto del 97%.
-          </p>
+          <div class="case-card">
+            <div class="case-header">
+              <span class="case-number">Caso 3</span>
+              <span class="case-title">Distribuidora de alimentos · Surco</span>
+            </div>
+            <div class="case-body">
+              <div class="case-section">
+                <strong>Problema:</strong> ~120 pagos diarios (transferencias, Yape, POS). 
+                Asistente cruzaba extracto vs facturas Odoo manualmente. 2 horas/día. 
+                Cierre de mes al tercer día hábil.
+              </div>
+              <div class="case-section">
+                <strong>Solución:</strong> n8n + API BCP + Odoo. Workflow nocturno descarga 
+                extracto, cruza contra facturas en estado "Esperando pago", concilia 
+                automáticamente. Excepciones a Slack. 97% de acierto en 25,000+ transacciones.
+              </div>
+              <div class="case-result">
+                <span>2 h/día → 5 min supervisión</span>
+                <span>Cierre de mes al día 1 hábil</span>
+              </div>
+            </div>
+          </div>
 
-          <h4>El marco: cómo identificar procesos automatizables</h4>
+          <div class="divider">
+            <span class="divider-dot"></span>
+          </div>
+
+          <h4 class="section-head">
+            <span class="head-line"></span>
+            Marco: ¿cómo identificar procesos automatizables?
+          </h4>
           <p>
-            Después de trabajar en más de 20 proyectos de automatización para empresas 
-            peruanas, he identificado un patrón común: los mejores candidatos para 
-            automatizar son procesos que cumplen con estas 4 características:
+            Después de 20+ proyectos de automatización, estos son los 4 criterios que uso 
+            para identificar candidatos:
           </p>
-          <p>
-            <strong>1. Son repetitivos.</strong> Si haces lo mismo más de una vez al 
-            día, es automatizable. Si lo haces una vez a la semana, también. Si lo 
-            haces una vez al año, probablemente no vale la pena.
-          </p>
-          <p>
-            <strong>2. Tienen reglas claras.</strong> La automatización funciona cuando 
-            puedes describir el proceso con "si X, entonces Y". Si necesitas juicio 
-            humano o interpretación subjetiva, la automatización se vuelve compleja.
-          </p>
-          <p>
-            <strong>3. Conectan sistemas.</strong> La mayoría de los procesos manuales 
-            existen porque los datos están atrapados en un sistema y necesitan moverse 
-            a otro. Un PDF que hay que pasar a Excel, un correo que hay que convertir 
-            en un ticket, un formulario que hay que registrar en una base de datos. 
-            Ahí es donde la automatización aporta más valor.
-          </p>
-          <p>
-            <strong>4. Tienen un costo medible.</strong> Si puedes calcular cuánto 
-            tiempo (y dinero) pierdes en un proceso manual, puedes calcular el ROI 
-            de automatizarlo. Si el ahorro mensual supera el costo de implementación 
-            en menos de 6 meses, el proyecto es viable.
-          </p>
-          <p>
-            No todo necesita Inteligencia Artificial. A veces una integración bien 
-            hecha de APIs existentes es más valiosa que un modelo de Machine Learning. 
-            El trabajo real está en identificar esos procesos dentro de tu empresa. 
-            Si quieres, puedo hacer un diagnóstico gratuito de 30 minutos para 
-            encontrar los tres procesos más automatizables de tu negocio. 
-          </p>
+          <div class="criteria">
+            <div class="criterion">
+              <span class="criterion-num">1</span>
+              <div>
+                <strong>Repetitivos</strong>
+                <p>Si haces lo mismo más de una vez al día, es automatizable.</p>
+              </div>
+            </div>
+            <div class="criterion">
+              <span class="criterion-num">2</span>
+              <div>
+                <strong>Reglas claras</strong>
+                <p>Si se describe con "cuando X, haz Y", funciona.</p>
+              </div>
+            </div>
+            <div class="criterion">
+              <span class="criterion-num">3</span>
+              <div>
+                <strong>Conectan sistemas</strong>
+                <p>Datos atrapados en un sistema que deben moverse a otro.</p>
+              </div>
+            </div>
+            <div class="criterion">
+              <span class="criterion-num">4</span>
+              <div>
+                <strong>Costo medible</strong>
+                <p>Si el ahorro mensual supera el costo en 6 meses, es viable.</p>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <span class="blog-tag">Productividad</span>
       </article>
     </div>
   </div>
@@ -546,7 +450,7 @@
   .blog-list {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 36px;
     max-width: 860px;
     margin: 0 auto;
   }
@@ -555,15 +459,20 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 40px 36px;
+    padding: 44px 40px;
     transition: all 0.3s;
-    cursor: default;
   }
 
   .blog-card:hover {
     border-color: var(--accent);
-    transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(99, 102, 241, 0.06);
+  }
+
+  .blog-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
   }
 
   .blog-date {
@@ -573,17 +482,10 @@
   }
 
   .blog-card h3 {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin: 12px 0 20px;
+    margin-bottom: 22px;
     line-height: 1.4;
-  }
-
-  .blog-content h4 {
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 24px 0 12px;
-    color: var(--text-primary);
   }
 
   .blog-content p {
@@ -594,30 +496,435 @@
   }
 
   .blog-content p:last-of-type {
-    margin-bottom: 20px;
+    margin-bottom: 0;
   }
 
-  .blog-content strong {
-    color: var(--text-primary);
-  }
-
+  /* Tag */
   .blog-tag {
-    display: inline-block;
-    font-size: 0.8rem;
-    padding: 4px 12px;
+    font-size: 0.75rem;
+    padding: 3px 10px;
     border-radius: 4px;
     background: rgba(99, 102, 241, 0.08);
     color: var(--accent);
     font-family: var(--font-mono);
   }
 
-  @media (max-width: 640px) {
+  /* Section headings */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 28px 0 16px;
+    color: var(--text-primary);
+  }
+
+  .head-line {
+    width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 28px 0;
+  }
+
+  .divider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  /* Stats row */
+  .blog-stats {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0 24px;
+  }
+
+  .stat {
+    flex: 1;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  /* Pipeline */
+  .pipeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .pipe-step {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(99, 102, 241, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .pipe-step:hover {
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  .pipe-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .pipe-body strong {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+    color: var(--text-primary);
+  }
+
+  .pipe-body p {
+    font-size: 0.78rem !important;
+    margin: 0 !important;
+    color: var(--text-secondary);
+    line-height: 1.4 !important;
+  }
+
+  /* Result box */
+  .result-box {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.02));
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 10px;
+    padding: 24px 20px;
+    margin: 20px 0;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    text-align: center;
+  }
+
+  .result-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+  }
+
+  .result-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* Lessons */
+  .lessons {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .lesson {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(99, 102, 241, 0.03);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .lesson-icon {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .lesson strong {
+    color: var(--text-primary);
+  }
+
+  /* Phases (collapsible) */
+  .phases {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .phase[open] {
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.9rem;
+    user-select: none;
+  }
+
+  .phase-header::-webkit-details-marker {
+    display: none;
+  }
+
+  .phase-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: rgba(99, 102, 241, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .phase-title {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .phase-duration {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .phase-arrow {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+  }
+
+  .phase[open] .phase-arrow {
+    transform: rotate(180deg);
+  }
+
+  .phase-body {
+    padding: 0 16px 16px;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: 0;
+  }
+
+  .phase-body p {
+    font-size: 0.88rem !important;
+    margin-bottom: 10px !important;
+  }
+
+  .phase-example {
+    font-size: 0.82rem !important;
+    color: var(--text-secondary);
+    background: rgba(99, 102, 241, 0.04);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-top: 8px !important;
+  }
+
+  /* Case cards */
+  .case-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+    transition: border-color 0.2s;
+  }
+
+  .case-card:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .case-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(99, 102, 241, 0.04);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .case-number {
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: rgba(99, 102, 241, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .case-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .case-body {
+    padding: 16px 18px;
+  }
+
+  .case-section {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .case-section strong {
+    color: var(--text-primary);
+  }
+
+  .case-result {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .case-result span {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    padding: 4px 10px;
+    background: rgba(99, 102, 241, 0.06);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* Criteria */
+  .criteria {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0 0;
+  }
+
+  .criterion {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .criterion:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .criterion-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .criterion strong {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .criterion p {
+    font-size: 0.78rem !important;
+    margin: 0 !important;
+    color: var(--text-secondary);
+    line-height: 1.4 !important;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
     .blog-card {
-      padding: 24px 20px;
+      padding: 28px 22px;
     }
 
     .blog-card h3 {
       font-size: 1.1rem;
+    }
+
+    .blog-stats {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pipeline {
+      grid-template-columns: 1fr;
+    }
+
+    .result-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .criteria {
+      grid-template-columns: 1fr;
     }
   }
 </style>
