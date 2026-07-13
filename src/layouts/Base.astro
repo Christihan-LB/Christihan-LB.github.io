@@ -4,9 +4,10 @@ import '../styles/global.css';
 export interface Props {
   title: string;
   description: string;
+  image?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image = '/og-image.png' } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,10 +17,45 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`https://christihan-lb.github.io${image}`} />
+    <meta property="og:url" content="https://christihan-lb.github.io" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Christihan Laurel",
+      "givenName": "Christihan",
+      "familyName": "Laurel",
+      "jobTitle": "Ingeniero Mecatrónico · MSc Computación · Docente PUCP",
+      "email": "c.laurelb@pucp.edu.pe",
+      "url": "https://christihan-lb.github.io",
+      "sameAs": [
+        "https://www.linkedin.com/in/christihan-laurel-bravo/",
+        "https://github.com/claurelb"
+      ],
+      "alumniOf": [
+        { "@type": "CollegeOrProgram", "name": "Pontificia Universidad Católica del Perú", "sameAs": "https://www.pucp.edu.pe" },
+        { "@type": "CollegeOrProgram", "name": "MITx", "sameAs": "https://www.edx.org/school/mitx" }
+      ],
+      "knowsAbout": ["Inteligencia Artificial", "Machine Learning", "Odoo", "Automatización", "Robótica"]
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Analytics (self-hosted) -->
+    <script defer data-domain="christihan-lb.github.io" src="https://plausible.io/js/script.js"></script>
   </head>
   <body>
     <slot />

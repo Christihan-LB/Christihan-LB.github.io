@@ -12,6 +12,8 @@ import Media from '../components/Media.astro';
 import Blog from '../components/Blog.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
+import Testimonials from '../components/Testimonials.astro';
+import ScrollAnim from '../components/ScrollAnim.astro';
 ---
 
 <Base
@@ -22,14 +24,15 @@ import Footer from '../components/Footer.astro';
   <main>
     <Hero />
     <About />
-    <Services />
-    <AutomationDemo />
+    <ScrollAnim><Services /></ScrollAnim>
+    <ScrollAnim><AutomationDemo /></ScrollAnim>
     <Timeline />
-    <Projects />
-    <Media />
-    <Publications />
-    <Blog />
-    <Contact />
+    <ScrollAnim><Projects /></ScrollAnim>
+    <ScrollAnim><Media /></ScrollAnim>
+    <Testimonials />
+    <ScrollAnim><Publications /></ScrollAnim>
+    <ScrollAnim><Blog /></ScrollAnim>
+    <ScrollAnim><Contact /></ScrollAnim>
+    <ScrollAnim><Footer /></ScrollAnim>
   </main>
-  <Footer />
 </Base>

@@ -1,21 +1,30 @@
 <section id="timeline">
   <div class="container">
-    <span class="section-label">Trayectoria</span>
-    <h2 class="section-title">Experiencia</h2>
-    <p class="section-subtitle">
+    <span class="section-label reveal">Trayectoria</span>
+    <h2 class="section-title reveal" style="transition-delay: 100ms">Experiencia</h2>
+    <p class="section-subtitle reveal" style="transition-delay: 200ms">
       Una década combinando docencia universitaria, desarrollo de software 
       e investigación aplicada.
     </p>
-    <div class="timeline">
+    <div class="timeline reveal" style="transition-delay: 300ms">
       <div class="timeline-item">
         <div class="timeline-marker"></div>
         <div class="timeline-content">
           <span class="timeline-date">2023 — Presente</span>
           <h3>Fullstack Odoo Developer</h3>
           <p class="timeline-org">Vauxoo — Odoo Gold Partner · Colima, México (remoto)</p>
-          <p>Desarrollo Odoo fullstack: backend (Python/PostgreSQL) y frontend (OWL/JS/XML). 
-          Módulos personalizados, migraciones, contribuciones a Odoo Core y OCA. 
-          Trabajo con equipos internacionales usando Agile/Scrum.</p>
+          <div class="timeline-body">
+            <p>Desarrollo Odoo fullstack: backend (Python/PostgreSQL) y frontend (OWL/JS/XML). 
+            Módulos personalizados, migraciones, contribuciones a Odoo Core y OCA. 
+            Trabajo con equipos internacionales usando Agile/Scrum.</p>
+            <div class="timeline-detail">
+              <p>• +822 contribuciones a Odoo (Core + Enterprise + OCA)</p>
+              <p>• 647 PRs fusionadas con 78.7% de aceptación</p>
+              <p>• Módulos: islamicrelief, internal_transfer, nortenas, sale_subscription</p>
+              <p>• Agile/Scrum con equipos en LATAM y Europa</p>
+            </div>
+          </div>
+          <button class="timeline-toggle">Ver más</button>
         </div>
       </div>
       <div class="timeline-item">
@@ -24,8 +33,17 @@
           <span class="timeline-date">2015 — Presente</span>
           <h3>Docente Universitario</h3>
           <p class="timeline-org">PUCP — Pontificia Universidad Católica del Perú</p>
-          <p>Enseñanza de IA, ML, Data Mining, Deep Learning, Robótica, Programación y ERP. 
-          Diseño de sílabos incorporando LLMs y GenAI. Modalidades presencial, virtual e híbrida.</p>
+          <div class="timeline-body">
+            <p>Enseñanza de IA, ML, Data Mining, Deep Learning, Robótica, Programación y ERP. 
+            Diseño de sílabos incorporando LLMs y GenAI. Modalidades presencial, virtual e híbrida.</p>
+            <div class="timeline-detail">
+              <p>• Cursos: IA, ML, Deep Learning, Data Mining, Robótica, ERP</p>
+              <p>• Incorporación de LLMs y GenAI en sílabos</p>
+              <p>• Modalidades: presencial, virtual, híbrida</p>
+              <p>• Dirección de tesis de pregrado y maestría</p>
+            </div>
+          </div>
+          <button class="timeline-toggle">Ver más</button>
         </div>
       </div>
       <div class="timeline-item">
@@ -34,9 +52,19 @@
           <span class="timeline-date">2020</span>
           <h3>Head of Engineering</h3>
           <p class="timeline-org">Grupo qAIRa · Lima, Perú</p>
-          <p>Lideré equipo de 6 ingenieros. Desarrollo de firmware para drones, APIs, 
-          sistema de inventario automatizado con CNN + visión artificial, modelos de 
-          calibración de sensores de calidad del aire.</p>
+          <div class="timeline-body">
+            <p>Lideré equipo de 6 ingenieros. Desarrollo de firmware para drones, APIs, 
+            sistema de inventario automatizado con CNN + visión artificial, modelos de 
+            calibración de sensores de calidad del aire.</p>
+            <div class="timeline-detail">
+              <p>• Liderazgo de equipo multidisciplinario (6 ingenieros)</p>
+              <p>• Firmware para drones de monitoreo ambiental</p>
+              <p>• Inventario automatizado con CNN + visión artificial</p>
+              <p>• Calibración de sensores de calidad del aire</p>
+              <p>• Patente INDECOPI: Módulo de Medición de Calidad del Aire</p>
+            </div>
+          </div>
+          <button class="timeline-toggle">Ver más</button>
         </div>
       </div>
       <div class="timeline-item">
@@ -45,9 +73,18 @@
           <span class="timeline-date">2016 — 2018</span>
           <h3>Research Assistant</h3>
           <p class="timeline-org">PUCP — Proyecto Interdisciplinario</p>
-          <p>Investigación en percepción de acciones y emociones en interacción humano-robot. 
-          Desarrollo de sistema de adquisición de señales EEG con sincronización de eventos. 
-          Publicación en Frontiers in Human Neuroscience.</p>
+          <div class="timeline-body">
+            <p>Investigación en percepción de acciones y emociones en interacción humano-robot. 
+            Desarrollo de sistema de adquisición de señales EEG con sincronización de eventos. 
+            Publicación en Frontiers in Human Neuroscience.</p>
+            <div class="timeline-detail">
+              <p>• Investigación en interacción humano-robot</p>
+              <p>• Sistema de adquisición de señales EEG</p>
+              <p>• Sincronización de eventos visuales</p>
+              <p>• Publicación en Frontiers in Human Neuroscience (2016)</p>
+            </div>
+          </div>
+          <button class="timeline-toggle">Ver más</button>
         </div>
       </div>
     </div>
@@ -110,10 +147,53 @@
     margin-bottom: 8px;
   }
 
-  .timeline-content p {
+  .timeline-body p {
     font-size: 0.95rem;
     color: var(--text-secondary);
     line-height: 1.6;
+  }
+
+  .timeline-detail {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .timeline-detail.open {
+    max-height: 200px;
+  }
+
+  .timeline-detail p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 2px 0;
+  }
+
+  .timeline-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 0 0;
+    transition: color 0.2s;
+  }
+
+  .timeline-toggle:hover {
+    color: var(--accent-hover);
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   @media (max-width: 640px) {
@@ -129,8 +209,34 @@
     .timeline-content h3 {
       font-size: 1rem;
     }
-    .timeline-content p {
+    .timeline-body p {
       font-size: 0.85rem;
     }
   }
 </style>
+
+<script>
+  document.querySelectorAll('.timeline-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const detail = btn.parentElement.querySelector('.timeline-detail');
+      const isOpen = detail.classList.toggle('open');
+      btn.textContent = isOpen ? 'Ver menos' : 'Ver más';
+    });
+  });
+
+  document.querySelectorAll('.reveal').forEach(el => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = parseInt(el.style.transitionDelay) || 0;
+            setTimeout(() => el.classList.add('visible'), delay);
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+    observer.observe(el);
+  });
+</script>

@@ -1,12 +1,21 @@
 <section id="projects">
   <div class="container">
-    <span class="section-label">Proyectos</span>
-    <h2 class="section-title">Trabajos destacados</h2>
-    <p class="section-subtitle">
+    <span class="section-label reveal">Proyectos</span>
+    <h2 class="section-title reveal" style="transition-delay: 100ms">Trabajos destacados</h2>
+    <p class="section-subtitle reveal" style="transition-delay: 200ms">
       Una selección de proyectos comerciales, académicos y de investigación.
     </p>
-    <div class="projects-grid">
-      <div class="project-card highlight">
+
+    <div class="filter-bar reveal" style="transition-delay: 250ms">
+      <button class="filter-btn active" data-filter="all">Todos</button>
+      <button class="filter-btn" data-filter="Comercial">Comercial</button>
+      <button class="filter-btn" data-filter="Investigación">Investigación</button>
+      <button class="filter-btn" data-filter="Académico">Académico</button>
+      <button class="filter-btn" data-filter="Patente">Patente</button>
+    </div>
+
+    <div class="projects-grid" id="projectsGrid">
+      <div class="project-card highlight" data-category="Comercial">
         <div class="project-tag">Comercial · Vauxoo</div>
         <h3>822 contribuciones Odoo</h3>
         <p class="stat-line">647 fusionadas (78.7% aceptación) en Odoo Core, Enterprise y OCA.</p>
@@ -16,13 +25,15 @@
           <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
           <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
         </div>
-        <p class="project-detail">Fullstack: backend Python/PostgreSQL + frontend OWL/JS/XML. Módulos principales: islamicrelief, internal_transfer, nortenas, sale_subscription. Contribuciones OCA: purchase_order_archive, account_move_name_sequence, purchase_analytic, product_pricelist_supplierinfo, reporting-engine.</p>
-        <div class="project-tech">
-          <span>Python</span><span>PostgreSQL</span><span>OWL</span><span>JavaScript</span><span>XML</span><span>Odoo 16-19</span>
+        <div class="project-detail-collapse">
+          <p class="project-detail">Fullstack: backend Python/PostgreSQL + frontend OWL/JS/XML. Módulos principales: islamicrelief, internal_transfer, nortenas, sale_subscription. Contribuciones OCA: purchase_order_archive, account_move_name_sequence, purchase_analytic, product_pricelist_supplierinfo, reporting-engine.</p>
+          <div class="project-tech">
+            <span>Python</span><span>PostgreSQL</span><span>OWL</span><span>JavaScript</span><span>XML</span><span>Odoo 16-19</span>
+          </div>
+          <a href="/contribuciones" class="ver-detalle">Ver desglose completo →</a>
         </div>
-        <a href="/contribuciones" class="ver-detalle">Ver desglose completo →</a>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Comercial">
         <div class="project-tag">Comercial</div>
         <h3>Nexo Automatizaciones</h3>
         <p>Agencia de automatización para empresas sin área TI. Automatización de procesos administrativos, integración SIAGIE/SUNEDU, OCR documental, workflows a medida.</p>
@@ -30,7 +41,7 @@
           <span>Python</span><span>n8n</span><span>OCR</span><span>Docker</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Investigación">
         <div class="project-tag">Investigación</div>
         <h3>Robotic Bartender — Pisco Sour</h3>
         <p>Desarrollo e implementación de un bartender robótico para preparación automática de Pisco Sour. Publicado en ICMRE 2024 (IEEE), Milán, Italia.</p>
@@ -38,7 +49,7 @@
           <span>Robótica</span><span>IEEE</span><span>Python</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Investigación">
         <div class="project-tag">Investigación</div>
         <h3>EEG + NAO Robot</h3>
         <p>Sistema de sincronización de triggers para EEG open-source en medición de potenciales evocados visuales. Publicado en Frontiers in Human Neuroscience (2016).</p>
@@ -46,7 +57,7 @@
           <span>EEG</span><span>Python</span><span>BCI</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Patente">
         <div class="project-tag">Patente</div>
         <h3>Módulo de Medición de Calidad del Aire</h3>
         <p>Registro INDECOPI (Expediente 000350-2020/DIN). Módulo IoT para monitoreo de calidad del aire con sensores y conectividad.</p>
@@ -54,7 +65,7 @@
           <span>IoT</span><span>Sensores</span><span>Python</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Académico">
         <div class="project-tag">Académico</div>
         <h3>MITx MicroMasters — Stats & Data Science</h3>
         <p>Programa del MIT a través de edX. Modelos de clasificación, redes neuronales (CNN, RNN), aprendizaje no supervisado, NLP y sistemas de recomendación.</p>
@@ -62,7 +73,7 @@
           <span>Python</span><span>R</span><span>ML</span><span>Stats</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Investigación">
         <div class="project-tag">Investigación · Robótica</div>
         <h3>Robot Pintor</h3>
         <p>Robot capaz de realizar pinturas. Control remoto de brazo robótico con sistema de visión.</p>
@@ -70,7 +81,7 @@
           <span>Robótica</span><span>Python</span><span>Visón</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Investigación">
         <div class="project-tag">Investigación · IA</div>
         <h3>Reinforcement Learning — ROS</h3>
         <p>Agente de reinforcement learning integrado con ROS Development Studio. Entrenamiento de modelos en entorno simulado.</p>
@@ -78,7 +89,7 @@
           <span>RL</span><span>ROS</span><span>Python</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Comercial">
         <div class="project-tag">qAIRa · Drones</div>
         <h3>Hangar Automatizado para Drones</h3>
         <p>Modelo de hangar con despliegue y recarga automatizada para drones de monitoreo ambiental.</p>
@@ -86,7 +97,7 @@
           <span>Robótica</span><span>IoT</span><span>Python</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Comercial">
         <div class="project-tag">qAIRa · IoT</div>
         <h3>Qhawax — Monitor de Calidad del Aire</h3>
         <p>Módulo IoT de medición de calidad del aire con sensores de partículas y gases. Patente INDECOPI.</p>
@@ -94,7 +105,7 @@
           <span>IoT</span><span>Sensores</span><span>Python</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Comercial">
         <div class="project-tag">qAIRa · Visión</div>
         <h3>QR Inventory con Drones</h3>
         <p>Software de lectura de códigos QR en almacenes inventariados mediante drones autónomos.</p>
@@ -102,7 +113,7 @@
           <span>Python</span><span>CV</span><span>Drones</span>
         </div>
       </div>
-      <div class="project-card">
+      <div class="project-card" data-category="Investigación">
         <div class="project-tag">GIT PUCP</div>
         <h3>SLAM + Summit Robot</h3>
         <p>Generación de mapas con SLAM en robot Summit. Mapeo autónomo de entornos para navegación.</p>
@@ -115,6 +126,36 @@
 </section>
 
 <style>
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -133,6 +174,10 @@
     border-color: var(--accent);
     transform: translateY(-3px);
     box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
+  }
+
+  .project-card.hidden {
+    display: none;
   }
 
   .project-card.highlight {
@@ -190,6 +235,16 @@
     letter-spacing: 0.05em;
   }
 
+  .project-detail-collapse {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .project-card.highlight .project-detail-collapse {
+    max-height: 300px;
+  }
+
   .project-detail {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -227,6 +282,17 @@
     border: 1px solid var(--border);
   }
 
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   @media (max-width: 1024px) {
     .projects-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -239,3 +305,38 @@
     }
   }
 </style>
+
+<script>
+  // Filter
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.project-card').forEach(card => {
+        if (filter === 'all' || card.dataset.category === filter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // Scroll animation
+  document.querySelectorAll('.reveal').forEach(el => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = parseInt(el.style.transitionDelay) || 0;
+            setTimeout(() => el.classList.add('visible'), delay);
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+    observer.observe(el);
+  });
+</script>

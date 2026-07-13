@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404 — Página no encontrada | Christihan Laurel" description="La página que buscas no existe.">
+  <div class="error-page">
+    <div class="error-code">404</div>
+    <h1>Página no encontrada</h1>
+    <p>La página que buscas no existe o fue movida.</p>
+    <a href="/" class="btn btn-primary">Volver al inicio</a>
+  </div>
+</Base>
+
+<style>
+  .error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .error-page h1 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .error-page p {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+  }
+</style>

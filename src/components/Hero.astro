@@ -1,15 +1,19 @@
 <section id="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+  </div>
   <div class="container hero-content">
     <div class="hero-text">
-      <p class="hero-greeting">Hola, soy</p>
-      <h1 class="hero-name">Christihan Laurel</h1>
-      <p class="hero-titles">Ing. Mecatrónico · MSc Computación · Docente PUCP<br/>Founder @ Nexo Automatizaciones</p>
-      <p class="hero-description">
+      <p class="hero-greeting reveal">Hola, soy</p>
+      <h1 class="hero-name reveal" style="transition-delay: 100ms">Christihan Laurel</h1>
+      <p class="hero-titles reveal" style="transition-delay: 200ms">Ing. Mecatrónico · MSc Computación · Docente PUCP<br/>Founder @ Nexo Automatizaciones</p>
+      <p class="hero-description reveal" style="transition-delay: 300ms">
         +10 años combinando academia e industria. Enseño inteligencia artificial y machine learning en PUCP,
         desarrollo Odoo fullstack (backend + frontend con OWL/JS) en Vauxoo, automatizo procesos empresariales y publico investigación
         en conferencias IEEE. Creo puentes entre la teoría y la práctica.
       </p>
-      <div class="hero-actions">
+      <div class="hero-actions reveal" style="transition-delay: 400ms">
         <a href="https://calendly.com/claurelb" class="btn btn-primary" target="_blank">
           Agenda una llamada
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -17,8 +21,12 @@
         <a href="#publications" class="btn btn-outline">
           Ver publicaciones
         </a>
+        <a href="/cv.pdf" class="btn btn-outline" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Descargar CV
+        </a>
       </div>
-      <div class="hero-social">
+      <div class="hero-social reveal" style="transition-delay: 500ms">
         <a href="https://www.linkedin.com/in/christihan-laurel-bravo/" target="_blank" aria-label="LinkedIn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
         </a>
@@ -33,7 +41,7 @@
         </a>
       </div>
     </div>
-    <div class="hero-image">
+    <div class="hero-image reveal" style="transition-delay: 200ms">
       <div class="hero-img-wrapper">
         <img src="/profile.png" alt="Christihan Laurel" />
       </div>
@@ -47,6 +55,49 @@
     display: flex;
     align-items: center;
     padding-top: 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%);
+    animation: grid-shift 20s linear infinite;
+  }
+
+  @keyframes grid-shift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(60px, 60px); }
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
   }
 
   .hero-content {
@@ -54,6 +105,8 @@
     grid-template-columns: 1fr 1fr;
     gap: 64px;
     align-items: center;
+    position: relative;
+    z-index: 1;
   }
 
   .hero-greeting {
@@ -92,8 +145,9 @@
 
   .hero-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 32px;
+    flex-wrap: wrap;
   }
 
   .hero-social {
@@ -103,11 +157,12 @@
 
   .hero-social a {
     color: var(--text-secondary);
-    transition: color 0.2s;
+    transition: color 0.2s, transform 0.2s;
   }
 
   .hero-social a:hover {
     color: var(--accent);
+    transform: translateY(-2px);
   }
 
   .hero-image {
@@ -128,6 +183,17 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   @media (max-width: 768px) {
@@ -163,5 +229,30 @@
     .hero-image {
       order: -1;
     }
+
+    .hero-glow {
+      width: 300px;
+      height: 300px;
+    }
   }
 </style>
+
+<script>
+  const heroObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.reveal').forEach((el, i) => {
+            const delay = parseInt(el.style.transitionDelay) || 0;
+            setTimeout(() => el.classList.add('visible'), delay);
+          });
+          heroObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  const hero = document.getElementById('hero');
+  if (hero) heroObserver.observe(hero);
+</script>
