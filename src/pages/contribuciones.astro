@@ -125,6 +125,36 @@ import Base from '../layouts/Base.astro';
         </div>
       </div>
 
+      <div class="section-card" id="publicos">
+        <h2>193 contribuciones públicas</h2>
+        <p class="section-desc">Aportes open source en GitHub y GitLab público. Odoo Core, Enterprise, OCA y otros repositorios.</p>
+        <div class="public-grid">
+          <div class="public-group">
+            <h3>Odoo Core & Enterprise</h3>
+            <div class="public-bar"><span class="pub-label">odoo/odoo</span><span class="pub-count">22</span><span class="pub-desc">Forward-ports y bugfixes</span></div>
+            <div class="public-bar"><span class="pub-label">odoo/enterprise</span><span class="pub-count">22</span><span class="pub-desc">Bugfixes y migraciones</span></div>
+            <div class="public-total"><span>44 total</span></div>
+          </div>
+          <div class="public-group">
+            <h3>OCA (Odoo Community Association)</h3>
+            <div class="public-bar"><span class="pub-label">purchase_order_archive</span><span class="pub-count">—</span><span class="pub-desc">Migración 16.0</span></div>
+            <div class="public-bar"><span class="pub-label">account_move_name_sequence</span><span class="pub-count">—</span><span class="pub-desc">Migración 18.0</span></div>
+            <div class="public-bar"><span class="pub-label">purchase_analytic</span><span class="pub-count">—</span><span class="pub-desc">Migración 17.0 y 18.0</span></div>
+            <div class="public-bar"><span class="pub-label">product_pricelist_supplierinfo</span><span class="pub-count">—</span><span class="pub-desc">Migración 18.0 + mejoras</span></div>
+            <div class="public-bar"><span class="pub-label">Otros 5 módulos</span><span class="pub-count">—</span><span class="pub-desc">Encrypt, analytic, vat, task, commission</span></div>
+            <div class="public-total"><span>77 total</span></div>
+          </div>
+          <div class="public-group">
+            <h3>Otros repos públicos</h3>
+            <div class="public-bar"><span class="pub-label">GitHub varios</span><span class="pub-count">72</span><span class="pub-desc">Issues, forks y PRs menores</span></div>
+            <div class="public-total"><span>72 total</span></div>
+          </div>
+        </div>
+        <div class="public-summary">
+          <p>Tasa de merge en aportes públicos: <strong>78.7%</strong></p>
+        </div>
+      </div>
+
       <div class="section-card">
         <h2>226 revisiones técnicas realizadas</h2>
         <div class="review-section">
@@ -389,9 +419,88 @@ import Base from '../layouts/Base.astro';
     margin-bottom: 20px;
   }
 
+  .section-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+
+  .public-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .public-group h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .public-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.85rem;
+  }
+
+  .pub-label {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    flex: 1;
+  }
+
+  .pub-count {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    width: 28px;
+    text-align: right;
+  }
+
+  .pub-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+
+  .public-total {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .public-total span {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .public-summary {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .public-summary strong {
+    color: var(--accent);
+  }
+
   @media (max-width: 768px) {
     .stats-banner {
       grid-template-columns: repeat(3, 1fr);
+    }
+
+    .public-grid {
+      grid-template-columns: 1fr;
     }
   }
 

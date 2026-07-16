@@ -33,38 +33,20 @@
           <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
         </div>
 
-        <div class="distro-section" id="distroSection">
+        <div class="distro-section">
           <h4>Distribución por plataforma</h4>
-          <div class="distro-bar" data-platform="vauxoo">
+          <div class="distro-bar" id="barVauxoo">
             <span class="distro-label">Vauxoo</span>
             <div class="distro-track"><div class="distro-fill" style="width:56.7%">466</div></div>
           </div>
-          <div class="distro-bar" data-platform="github">
+          <div class="distro-bar" id="barGitHub">
             <span class="distro-label">GitHub</span>
             <div class="distro-track"><div class="distro-fill" style="width:22.3%">183</div></div>
           </div>
-          <div class="distro-bar" data-platform="gitlab">
+          <div class="distro-bar" id="barGitLab">
             <span class="distro-label">GitLab</span>
             <div class="distro-track"><div class="distro-fill" style="width:21%">173</div></div>
           </div>
-        </div>
-
-        <div class="distro-section" id="privadoRepos" style="display:none">
-          <h4>Repositorios privados (Vauxoo)</h4>
-          <div class="distro-bar"><span class="distro-label">instance</span><div class="distro-track"><div class="distro-fill" style="width:34%">43</div></div></div>
-          <div class="distro-bar"><span class="distro-label">nortenas</span><div class="distro-track"><div class="distro-fill" style="width:20%">26</div></div></div>
-          <div class="distro-bar"><span class="distro-label">islamicrelief</span><div class="distro-track"><div class="distro-fill" style="width:35%">45</div></div></div>
-          <div class="distro-bar"><span class="distro-label">vauxoo (core)</span><div class="distro-track"><div class="distro-fill" style="width:24%">30</div></div></div>
-          <p class="repo-note">+322 aportes en otros repositorios internos</p>
-        </div>
-
-        <div class="distro-section" id="publicoRepos" style="display:none">
-          <h4>Repositorios públicos</h4>
-          <div class="distro-bar"><span class="distro-label">ircanada/ircodoo</span><div class="distro-track"><div class="distro-fill" style="width:83%">163</div></div></div>
-          <div class="distro-bar"><span class="distro-label">odoo/odoo</span><div class="distro-track"><div class="distro-fill" style="width:11%">22</div></div></div>
-          <div class="distro-bar"><span class="distro-label">odoo/enterprise</span><div class="distro-track"><div class="distro-fill" style="width:11%">22</div></div></div>
-          <div class="distro-bar"><span class="distro-label">OCA</span><div class="distro-track"><div class="distro-fill" style="width:39%">77</div></div></div>
-          <p class="repo-note">+72 aportes en otros repos públicos</p>
         </div>
 
         <div class="review-section">
@@ -548,52 +530,46 @@
     observer.observe(el);
   });
 
-  // Public/Private toggle
+  // Public/Private toggle — solo cambia números, sin saltos de layout
   const contribTotal = document.getElementById('contribTotal');
   const statLine = document.getElementById('statLine');
   const statsRow = document.getElementById('statsRow');
-  const distroSection = document.getElementById('distroSection');
-  const privadoRepos = document.getElementById('privadoRepos');
-  const publicoRepos = document.getElementById('publicoRepos');
+  const bars = {
+    vauxoo: document.getElementById('barVauxoo'),
+    github: document.getElementById('barGitHub'),
+    gitlab: document.getElementById('barGitLab'),
+  };
+
+  const views = {
+    total: {
+      num: '822',
+      line: '647 fusionadas · 78.7% aceptación · 226 revisiones técnicas',
+      stats: '<div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div><div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div><div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div><div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>',
+    },
+    privado: {
+      num: '629',
+      line: 'Vauxoo (466) + ircanada/ircodoo (163) · 76.5% del total',
+      stats: '<div class="stat"><span class="stat-num">466</span><span class="stat-label">Git Vauxoo</span></div><div class="stat"><span class="stat-num">163</span><span class="stat-label">ircanada/ircodoo</span></div><div class="stat"><span class="stat-num">~30</span><span class="stat-label">Desarrolladores</span></div><div class="stat"><span class="stat-num">100%</span><span class="stat-label">Merge interno</span></div>',
+    },
+    publico: {
+      num: '193',
+      line: 'GitHub (183) + GitLab público (10) · 23.5% del total',
+      stats: '<div class="stat"><span class="stat-num">44</span><span class="stat-label">Odoo core+ee</span></div><div class="stat"><span class="stat-num">77</span><span class="stat-label">OCA</span></div><div class="stat"><span class="stat-num">62</span><span class="stat-label">Otros públicos</span></div><div class="stat"><span class="stat-num">78.7%</span><span class="stat-label">Merge rate</span></div>',
+    },
+  };
 
   document.querySelectorAll('.toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const view = btn.dataset.view;
+      const view = views[btn.dataset.view];
+      contribTotal.textContent = view.num;
+      statLine.textContent = view.line;
+      statsRow.innerHTML = view.stats;
 
-      distroSection.style.display = view === 'total' ? '' : 'none';
-      privadoRepos.style.display = view === 'privado' ? '' : 'none';
-      publicoRepos.style.display = view === 'publico' ? '' : 'none';
-
-      if (view === 'total') {
-        contribTotal.textContent = '822';
-        statLine.innerHTML = '647 fusionadas · 78.7% aceptación · 226 revisiones técnicas';
-        statsRow.innerHTML = `
-          <div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div>
-          <div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div>
-          <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
-          <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
-        `;
-      } else if (view === 'privado') {
-        contribTotal.textContent = '466';
-        statLine.innerHTML = 'Repositorio interno Vauxoo · 56.7% del total';
-        statsRow.innerHTML = `
-          <div class="stat"><span class="stat-num">4</span><span class="stat-label">Repos principales</span></div>
-          <div class="stat"><span class="stat-num">45</span><span class="stat-label">Top módulo</span></div>
-          <div class="stat"><span class="stat-num">~30</span><span class="stat-label">Desarrolladores</span></div>
-          <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Tasa merge (interna)</span></div>
-        `;
-      } else {
-        contribTotal.textContent = '356';
-        statLine.innerHTML = 'Código abierto · 43.3% del total · GitHub + GitLab + OCA';
-        statsRow.innerHTML = `
-          <div class="stat"><span class="stat-num">185</span><span class="stat-label">ircanada</span></div>
-          <div class="stat"><span class="stat-num">77</span><span class="stat-label">OCA</span></div>
-          <div class="stat"><span class="stat-num">44</span><span class="stat-label">odoo/odoo+ee</span></div>
-          <div class="stat"><span class="stat-num">50</span><span class="stat-label">Otros</span></div>
-        `;
-      }
+      Object.entries(bars).forEach(([key, el]) => {
+        el.style.opacity = btn.dataset.view === 'total' ? '1' : key === 'vauxoo' && btn.dataset.view === 'privado' ? '1' : key !== 'vauxoo' && btn.dataset.view === 'publico' ? '1' : '0.35';
+      });
     });
   });
 </script>
