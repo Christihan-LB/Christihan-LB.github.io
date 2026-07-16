@@ -15,31 +15,56 @@
     </div>
 
     <div class="projects-grid" id="projectsGrid">
-      <div class="project-card highlight" data-category="Comercial">
+      <div class="project-card highlight" data-category="Comercial" id="odooCard">
         <div class="project-tag">Comercial · Vauxoo</div>
-        <h3>822 contribuciones únicas</h3>
-        <p class="stat-line">647 fusionadas · 78.7% aceptación · 226 revisiones técnicas</p>
-        <div class="stats-row">
+        <h3><span class="contrib-total" id="contribTotal">822</span> contribuciones únicas</h3>
+        <p class="stat-line" id="statLine">647 fusionadas · 78.7% aceptación · 226 revisiones técnicas</p>
+
+        <div class="contrib-toggle">
+          <button class="toggle-btn active" data-view="total">Todos</button>
+          <button class="toggle-btn" data-view="privado">Privado</button>
+          <button class="toggle-btn" data-view="publico">Público</button>
+        </div>
+
+        <div class="stats-row" id="statsRow">
           <div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div>
           <div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div>
           <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
           <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
         </div>
 
-        <div class="distro-section">
+        <div class="distro-section" id="distroSection">
           <h4>Distribución por plataforma</h4>
-          <div class="distro-bar">
+          <div class="distro-bar" data-platform="vauxoo">
             <span class="distro-label">Vauxoo</span>
             <div class="distro-track"><div class="distro-fill" style="width:56.7%">466</div></div>
           </div>
-          <div class="distro-bar">
+          <div class="distro-bar" data-platform="github">
             <span class="distro-label">GitHub</span>
             <div class="distro-track"><div class="distro-fill" style="width:22.3%">183</div></div>
           </div>
-          <div class="distro-bar">
+          <div class="distro-bar" data-platform="gitlab">
             <span class="distro-label">GitLab</span>
             <div class="distro-track"><div class="distro-fill" style="width:21%">173</div></div>
           </div>
+        </div>
+
+        <div class="distro-section" id="privadoRepos" style="display:none">
+          <h4>Repositorios privados (Vauxoo)</h4>
+          <div class="distro-bar"><span class="distro-label">instance</span><div class="distro-track"><div class="distro-fill" style="width:34%">43</div></div></div>
+          <div class="distro-bar"><span class="distro-label">nortenas</span><div class="distro-track"><div class="distro-fill" style="width:20%">26</div></div></div>
+          <div class="distro-bar"><span class="distro-label">islamicrelief</span><div class="distro-track"><div class="distro-fill" style="width:35%">45</div></div></div>
+          <div class="distro-bar"><span class="distro-label">vauxoo (core)</span><div class="distro-track"><div class="distro-fill" style="width:24%">30</div></div></div>
+          <p class="repo-note">+322 aportes en otros repositorios internos</p>
+        </div>
+
+        <div class="distro-section" id="publicoRepos" style="display:none">
+          <h4>Repositorios públicos</h4>
+          <div class="distro-bar"><span class="distro-label">ircanada/ircodoo</span><div class="distro-track"><div class="distro-fill" style="width:83%">163</div></div></div>
+          <div class="distro-bar"><span class="distro-label">odoo/odoo</span><div class="distro-track"><div class="distro-fill" style="width:11%">22</div></div></div>
+          <div class="distro-bar"><span class="distro-label">odoo/enterprise</span><div class="distro-track"><div class="distro-fill" style="width:11%">22</div></div></div>
+          <div class="distro-bar"><span class="distro-label">OCA</span><div class="distro-track"><div class="distro-fill" style="width:39%">77</div></div></div>
+          <p class="repo-note">+72 aportes en otros repos públicos</p>
         </div>
 
         <div class="review-section">
@@ -233,6 +258,46 @@
   .project-card.highlight {
     border-color: var(--accent);
     background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.05) 100%);
+  }
+
+  .contrib-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 3px;
+    width: fit-content;
+  }
+
+  .toggle-btn {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .toggle-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .toggle-btn:hover:not(.active) {
+    color: var(--text-primary);
+  }
+
+  .repo-note {
+    font-size: 0.75rem !important;
+    color: var(--text-secondary) !important;
+    text-align: center;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
   }
 
   .card-desc {
@@ -481,5 +546,54 @@
       { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
     observer.observe(el);
+  });
+
+  // Public/Private toggle
+  const contribTotal = document.getElementById('contribTotal');
+  const statLine = document.getElementById('statLine');
+  const statsRow = document.getElementById('statsRow');
+  const distroSection = document.getElementById('distroSection');
+  const privadoRepos = document.getElementById('privadoRepos');
+  const publicoRepos = document.getElementById('publicoRepos');
+
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const view = btn.dataset.view;
+
+      distroSection.style.display = view === 'total' ? '' : 'none';
+      privadoRepos.style.display = view === 'privado' ? '' : 'none';
+      publicoRepos.style.display = view === 'publico' ? '' : 'none';
+
+      if (view === 'total') {
+        contribTotal.textContent = '822';
+        statLine.innerHTML = '647 fusionadas · 78.7% aceptación · 226 revisiones técnicas';
+        statsRow.innerHTML = `
+          <div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div>
+          <div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div>
+          <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
+          <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
+        `;
+      } else if (view === 'privado') {
+        contribTotal.textContent = '466';
+        statLine.innerHTML = 'Repositorio interno Vauxoo · 56.7% del total';
+        statsRow.innerHTML = `
+          <div class="stat"><span class="stat-num">4</span><span class="stat-label">Repos principales</span></div>
+          <div class="stat"><span class="stat-num">45</span><span class="stat-label">Top módulo</span></div>
+          <div class="stat"><span class="stat-num">~30</span><span class="stat-label">Desarrolladores</span></div>
+          <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Tasa merge (interna)</span></div>
+        `;
+      } else {
+        contribTotal.textContent = '356';
+        statLine.innerHTML = 'Código abierto · 43.3% del total · GitHub + GitLab + OCA';
+        statsRow.innerHTML = `
+          <div class="stat"><span class="stat-num">185</span><span class="stat-label">ircanada</span></div>
+          <div class="stat"><span class="stat-num">77</span><span class="stat-label">OCA</span></div>
+          <div class="stat"><span class="stat-num">44</span><span class="stat-label">odoo/odoo+ee</span></div>
+          <div class="stat"><span class="stat-num">50</span><span class="stat-label">Otros</span></div>
+        `;
+      }
+    });
   });
 </script>
