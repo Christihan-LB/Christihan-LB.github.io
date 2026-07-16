@@ -96,6 +96,9 @@ import Base from '../layouts/Base.astro';
 
       <div class="section-card">
         <h2>Repositorios con mayor actividad</h2>
+        <div class="repo-section-label">
+          <span class="repo-badge private">Privados</span>
+        </div>
         <div class="repo-list">
           <div class="repo-item">
             <span class="repo-name">ircanada/ircodoo</span>
@@ -113,6 +116,16 @@ import Base from '../layouts/Base.astro';
             <span class="repo-desc">Integración Norteñas</span>
           </div>
           <div class="repo-item">
+            <span class="repo-name">vauxoo/islamicrelief</span>
+            <span class="repo-count">45 aportes</span>
+            <span class="repo-desc">Módulo interno Vauxoo</span>
+          </div>
+        </div>
+        <div class="repo-section-label" style="margin-top:20px">
+          <span class="repo-badge public">Públicos</span>
+        </div>
+        <div class="repo-list">
+          <div class="repo-item">
             <span class="repo-name">odoo/odoo</span>
             <span class="repo-count">22 aportes</span>
             <span class="repo-desc">Odoo Core (forward-ports)</span>
@@ -121,6 +134,11 @@ import Base from '../layouts/Base.astro';
             <span class="repo-name">odoo/enterprise</span>
             <span class="repo-count">22 aportes</span>
             <span class="repo-desc">Odoo Enterprise</span>
+          </div>
+          <div class="repo-item">
+            <span class="repo-name">OCA (varios)</span>
+            <span class="repo-count">77 aportes</span>
+            <span class="repo-desc">9 módulos de la asociación</span>
           </div>
         </div>
       </div>
@@ -492,6 +510,30 @@ import Base from '../layouts/Base.astro';
 
   .public-summary strong {
     color: var(--accent);
+  }
+
+  .repo-section-label {
+    margin-bottom: 10px;
+  }
+
+  .repo-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+
+  .repo-badge.private {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+  }
+
+  .repo-badge.public {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
   }
 
   @media (max-width: 768px) {
