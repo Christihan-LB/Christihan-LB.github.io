@@ -26,11 +26,13 @@
           <button class="toggle-btn" data-view="publico">Público</button>
         </div>
 
+        <a href="" class="ver-detalle" style="display:none">Ver detalle de aportes públicos →</a>
+
         <div class="stats-row" id="statsRow">
-          <div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div>
-          <div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div>
-          <div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div>
-          <div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>
+          <div class="stat"><span class="stat-num" id="s1n">410</span><span class="stat-label" id="s1l">Mejoras</span></div>
+          <div class="stat"><span class="stat-num" id="s2n">185</span><span class="stat-label" id="s2l">Bugfixes</span></div>
+          <div class="stat"><span class="stat-num" id="s3n">85</span><span class="stat-label" id="s3l">Migraciones</span></div>
+          <div class="stat"><span class="stat-num" id="s4n">40</span><span class="stat-label" id="s4l">Features</span></div>
         </div>
 
         <div class="distro-section">
@@ -74,7 +76,6 @@
           <div class="project-tech">
             <span>Python</span><span>PostgreSQL</span><span>OWL</span><span>JavaScript</span><span>XML</span><span>Odoo 16-19</span>
           </div>
-          <a href="/contribuciones" class="ver-detalle">Ver desglose completo →</a>
         </div>
       </div>
       <div class="project-card" data-category="Comercial">
@@ -337,6 +338,13 @@
     margin-bottom: 10px;
   }
 
+  .contrib-total {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
   .stat-line {
     font-size: 0.9rem;
     color: var(--text-secondary);
@@ -349,11 +357,14 @@
     margin-bottom: 16px;
   }
 
-  .stat {
+  :global(.stat) {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .stat-num {
+  :global(.stat-num) {
     display: block;
     font-size: 1.3rem;
     font-weight: 800;
@@ -361,7 +372,7 @@
     font-family: var(--font-mono);
   }
 
-  .stat-label {
+  :global(.stat-label) {
     font-size: 0.7rem;
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -440,7 +451,7 @@
 
   .ver-detalle {
     display: inline-block;
-    margin-top: 12px;
+    margin-bottom: 16px;
     font-size: 0.85rem;
     font-weight: 600;
   }
@@ -533,39 +544,49 @@
   // Public/Private toggle — solo cambia números, sin saltos de layout
   const contribTotal = document.getElementById('contribTotal');
   const statLine = document.getElementById('statLine');
-  const statsRow = document.getElementById('statsRow');
+  const s = {
+    n1: document.getElementById('s1n'), l1: document.getElementById('s1l'),
+    n2: document.getElementById('s2n'), l2: document.getElementById('s2l'),
+    n3: document.getElementById('s3n'), l3: document.getElementById('s3l'),
+    n4: document.getElementById('s4n'), l4: document.getElementById('s4l'),
+  };
   const bars = {
     vauxoo: document.getElementById('barVauxoo'),
     github: document.getElementById('barGitHub'),
     gitlab: document.getElementById('barGitLab'),
   };
+  const verDetalle = document.querySelector('.ver-detalle');
 
-  const views = {
-    total: {
-      num: '822',
-      line: '647 fusionadas · 78.7% aceptación · 226 revisiones técnicas',
-      stats: '<div class="stat"><span class="stat-num">410</span><span class="stat-label">Mejoras</span></div><div class="stat"><span class="stat-num">185</span><span class="stat-label">Bugfixes</span></div><div class="stat"><span class="stat-num">85</span><span class="stat-label">Migraciones</span></div><div class="stat"><span class="stat-num">40</span><span class="stat-label">Features</span></div>',
-    },
-    privado: {
-      num: '629',
-      line: 'Vauxoo (466) + ircanada/ircodoo (163) · 76.5% del total',
-      stats: '<div class="stat"><span class="stat-num">466</span><span class="stat-label">Git Vauxoo</span></div><div class="stat"><span class="stat-num">163</span><span class="stat-label">ircanada/ircodoo</span></div><div class="stat"><span class="stat-num">~30</span><span class="stat-label">Desarrolladores</span></div><div class="stat"><span class="stat-num">100%</span><span class="stat-label">Merge interno</span></div>',
-    },
-    publico: {
-      num: '193',
-      line: 'GitHub (183) + GitLab público (10) · 23.5% del total',
-      stats: '<div class="stat"><span class="stat-num">44</span><span class="stat-label">Odoo core+ee</span></div><div class="stat"><span class="stat-num">77</span><span class="stat-label">OCA</span></div><div class="stat"><span class="stat-num">62</span><span class="stat-label">Otros públicos</span></div><div class="stat"><span class="stat-num">78.7%</span><span class="stat-label">Merge rate</span></div>',
-    },
+  const viewData = {
+    total: { num: '822', line: '647 fusionadas · 78.7% aceptación · 226 revisiones técnicas',
+      n: ['410','185','85','40'], l: ['Mejoras','Bugfixes','Migraciones','Features'], link: '', linkText: '' },
+    privado: { num: '629', line: 'Vauxoo (466) + ircanada (163) · 76.5% del total',
+      n: ['466','163','~30','100%'], l: ['Git Vauxoo','ircanada/ircodoo','Desarrolladores','Merge interno'], link: '', linkText: '' },
+    publico: { num: '193', line: 'GitHub público · 23.5% del total',
+      n: ['44','~77','72','78.7%'], l: ['Odoo core+ee','OCA (10 repos)','Otros públicos','Merge rate'], link: '/contribuciones#publicos', linkText: 'Ver detalle de aportes públicos →' },
   };
 
   document.querySelectorAll('.toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const view = views[btn.dataset.view];
+      const view = viewData[btn.dataset.view];
       contribTotal.textContent = view.num;
       statLine.textContent = view.line;
-      statsRow.innerHTML = view.stats;
+      s.n1.textContent = view.n[0]; s.l1.textContent = view.l[0];
+      s.n2.textContent = view.n[1]; s.l2.textContent = view.l[1];
+      s.n3.textContent = view.n[2]; s.l3.textContent = view.l[2];
+      s.n4.textContent = view.n[3]; s.l4.textContent = view.l[3];
+
+      if (verDetalle) {
+        if (view.link) {
+          verDetalle.href = view.link;
+          verDetalle.textContent = view.linkText;
+          verDetalle.style.display = '';
+        } else {
+          verDetalle.style.display = 'none';
+        }
+      }
 
       Object.entries(bars).forEach(([key, el]) => {
         el.style.opacity = btn.dataset.view === 'total' ? '1' : key === 'vauxoo' && btn.dataset.view === 'privado' ? '1' : key !== 'vauxoo' && btn.dataset.view === 'publico' ? '1' : '0.35';
