@@ -145,100 +145,232 @@ import Base from '../layouts/Base.astro';
 
       <div class="section-card" id="publicos">
         <h2>193 contribuciones públicas</h2>
-        <p class="section-desc">Aportes open source en GitHub. Odoo Core, Odoo Enterprise, OCA y otros repositorios. Datos extraídos del <a href="https://gist.github.com/Christihan-LB/2d7c7729d02ac56cefa4d0d5e0cedc94" target="_blank">Gist de contribuciones</a>.</p>
+        <p class="section-desc">Aportes open source en GitHub. Odoo, OCA y otros repositorios públicos. Datos extraídos del <a href="https://gist.github.com/Christihan-LB/2d7c7729d02ac56cefa4d0d5e0cedc94" target="_blank">Gist de contribuciones</a>.</p>
 
-        <div class="public-group">
-          <h3>Odoo Core & Enterprise <span class="pub-total">44</span></h3>
-          <div class="pub-pr-list">
-            <div class="pub-pr">
-              <a href="https://github.com/odoo/odoo/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank" class="pub-pr-link">odoo/odoo</a>
-              <span class="pub-pr-count">22 PRs</span>
-              <span class="pub-pr-desc">Forward-ports y bugfixes a Odoo Core</span>
-            </div>
-            <div class="pub-pr">
-              <a href="https://github.com/odoo/enterprise/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank" class="pub-pr-link">odoo/enterprise</a>
-              <span class="pub-pr-count">22 PRs</span>
-              <span class="pub-pr-desc">Forward-ports y bugfixes a Enterprise</span>
-            </div>
-          </div>
-          <div class="pub-gist-link">
-            <a href="https://gist.github.com/Christihan-LB/2d7c7729d02ac56cefa4d0d5e0cedc94#file-2_aportes_desglosado-md" target="_blank">Ver PRs individuales en el Gist →</a>
-          </div>
-        </div>
-
-        <div class="public-group">
-          <h3>OCA · Odoo Community Association <span class="pub-total">~77</span></h3>
-          <div class="pub-pr-list">
-            <div class="pub-pr">
-              <span class="pub-pr-link">purchase_order_archive</span>
-              <span class="pub-pr-count">1</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/purchase-workflow/pull/1993" target="_blank">Migración a 16.0</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">account_move_name_sequence</span>
-              <span class="pub-pr-count">1</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/account-financial-tools/pull/2016" target="_blank">Migración a 18.0</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">purchase_analytic</span>
-              <span class="pub-pr-count">3</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/account-analytic/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank">Migraciones a 17.0 y 18.0</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">product_pricelist_supplierinfo</span>
-              <span class="pub-pr-count">4</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/product-attribute/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank">Migración 18.0 + mejoras</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">report_qweb_encrypt</span>
-              <span class="pub-pr-count">1</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/reporting-engine/pull/1066" target="_blank">Migración a 18.0</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">stock_picking_analytic</span>
-              <span class="pub-pr-count">1</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/account-analytic/pull/660" target="_blank">Mejora rendimiento</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">sale_commission + sale_commission_salesman</span>
-              <span class="pub-pr-count">4</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/commission/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank">Migración 17.0 + bugfixes</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">odoo-module-migrator</span>
-              <span class="pub-pr-count">4</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/odoo-module-migrator/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank">Renamed fields para migraciones</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">partner_ref_vat_unique + project_task_code</span>
-              <span class="pub-pr-count">3</span>
-              <span class="pub-pr-desc"><a href="https://github.com/OCA/partner-contact/pull/1691" target="_blank">Búsqueda por VAT</a> · <a href="https://github.com/OCA/project/pull/1246" target="_blank">Búsqueda por tarea</a></span>
-            </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">product_analytic + server_action_mass_edit</span>
-              <span class="pub-pr-count">2</span>
-              <span class="pub-pr-desc">Migración 16.0 · mejora en server-ux</span>
-            </div>
+        <div class="pub-repo-group">
+          <h3>Odoo Core & Enterprise <span class="pub-count-badge">44</span></h3>
+          <p class="pub-repo-note">Forward-ports y bugfixes a odoo/odoo y odoo/enterprise (v17 → v18).</p>
+          <div class="pub-pr-table">
+            <div class="pub-pr-head"><span>Repo</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+            <a href="https://github.com/odoo/odoo/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank" class="pub-pr-row">
+              <span class="pub-pr-repo">odoo/odoo</span>
+              <span class="pub-pr-type">Forward-port</span>
+              <span class="pub-pr-desc">22 forward-ports a v18</span>
+              <span class="pub-pr-status merged">Merged</span>
+            </a>
+            <a href="https://github.com/odoo/enterprise/pulls?q=is%3Apr+author%3ACLaurelB" target="_blank" class="pub-pr-row">
+              <span class="pub-pr-repo">odoo/enterprise</span>
+              <span class="pub-pr-type">Forward-port</span>
+              <span class="pub-pr-desc">22 forward-ports a v18</span>
+              <span class="pub-pr-status merged">Merged</span>
+            </a>
           </div>
         </div>
 
-        <div class="public-group">
-          <h3>Otros repos públicos <span class="pub-total">~72</span></h3>
-          <div class="pub-pr-list">
-            <div class="pub-pr">
-              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0" target="_blank" class="pub-pr-link">CLaurelB/odoo_getting_started_16.0</a>
-              <span class="pub-pr-count">~16</span>
-              <span class="pub-pr-desc">Material de aprendizaje Odoo 16 (chapters + estate)</span>
+        <div class="pub-repo-group">
+          <h3>OCA · Odoo Community Association <span class="pub-count-badge">~34</span></h3>
+          <p class="pub-repo-note">Migraciones, bugfixes y mejoras en 12 módulos de la asociación Odoo Community.</p>
+          
+          <div class="pub-subgroup">
+            <h4>OCA/account-analytic <span class="pub-mod-count">5</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/account-analytic/pull/660" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">stock_picking_analytic</span><span class="pub-pr-date">2024-05-31</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Improve analytic distribution performance</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/account-analytic/pull/594" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">product_analytic</span><span class="pub-pr-date">2023-09-25</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 16.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/account-analytic/pull/737" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">purchase_analytic</span><span class="pub-pr-date">2025-01-21</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 18.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/account-analytic/pull/731" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">purchase_analytic</span><span class="pub-pr-date">2025-01-09</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 17.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/account-analytic/pull/707" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">purchase_analytic</span><span class="pub-pr-date">2024-10-24</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">[17.0][mig] purchase_analytic</span><span class="pub-pr-status closed">Closed</span>
+              </a>
             </div>
-            <div class="pub-pr">
-              <a href="https://github.com/odoo/upgrade-util/pull/107" target="_blank" class="pub-pr-link">odoo/upgrade-util</a>
-              <span class="pub-pr-count">1</span>
-              <span class="pub-pr-desc">Bugfix en utilidades de migración</span>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/account-financial-tools <span class="pub-mod-count">1</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/account-financial-tools/pull/2016" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">account_move_name_sequence</span><span class="pub-pr-date">2025-01-20</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 18.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
             </div>
-            <div class="pub-pr">
-              <span class="pub-pr-link">Otros (CybroAddons, avoinsystems, etc.)</span>
-              <span class="pub-pr-count">~55</span>
-              <span class="pub-pr-desc">Issues, forks, PRs menores y forward-ports automáticos</span>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/commission <span class="pub-mod-count">4</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/commission/pull/558" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">sale_commission</span><span class="pub-pr-date">2024-08-22</span><span class="pub-pr-type">Bugfix</span><span class="pub-pr-desc">Partner fetch for agents creation on move lines</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/commission/pull/551" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">sale_commission_salesman</span><span class="pub-pr-date">2024-08-08</span><span class="pub-pr-type">Bugfix</span><span class="pub-pr-desc">Partner fetch for agents creation on move lines</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/commission/pull/534" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">sale_commission_salesman</span><span class="pub-pr-date">2024-06-14</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 17.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/commission/pull/535" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">Core</span><span class="pub-pr-date">2024-06-14</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Update settlement, tables and models names</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/odoo-module-migrator <span class="pub-mod-count">4</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/odoo-module-migrator/pull/130" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">migrator</span><span class="pub-pr-date">2025-02-05</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Renamed fields cases for hr and account</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/odoo-module-migrator/pull/125" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">migrator</span><span class="pub-pr-date">2024-12-13</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">[UPG] Base migration upgrade for fields rename</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/OCA/odoo-module-migrator/pull/106" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">migrator</span><span class="pub-pr-date">2024-10-25</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Renamed fields case for l10n_mx</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/odoo-module-migrator/pull/99" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">migrator</span><span class="pub-pr-date">2024-10-05</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Removed fields, renamed fields and models cases</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/partner-contact <span class="pub-mod-count">2</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/partner-contact/pull/1704" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">partner_vat_unique</span><span class="pub-pr-date">2024-03-15</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Enable name search by VAT</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/partner-contact/pull/1691" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">partner_ref_vat_unique</span><span class="pub-pr-date">2024-03-06</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Enable name search by VAT</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/product-attribute <span class="pub-mod-count">4</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/product-attribute/pull/1837" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">product_pricelist_supplierinfo</span><span class="pub-pr-date">2025-01-07</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 18.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/product-attribute/pull/1836" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">product_pricelist_supplierinfo</span><span class="pub-pr-date">2025-01-07</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Improve sale margin string, exclude discount in price</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/OCA/product-attribute/pull/2177" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">product_pricelist_supplierinfo</span><span class="pub-pr-date">2025-01-05</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">[18.0][FIX][IMP] product_pricelist_supplierinfo</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/OCA/product-attribute/pull/1745" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">product_pricelist_supplierinfo</span><span class="pub-pr-date">2024-10-10</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">[18.0][MIG] product_pricelist_supplierinfo</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/project <span class="pub-mod-count">1</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/project/pull/1246" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">project_task_code</span><span class="pub-pr-date">2024-03-06</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Enable name search by Task Number</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/purchase-workflow <span class="pub-mod-count">1</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/purchase-workflow/pull/1993" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">purchase_order_archive</span><span class="pub-pr-date">2023-09-04</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 16.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/reporting-engine <span class="pub-mod-count">1</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/reporting-engine/pull/1066" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">report_qweb_encrypt</span><span class="pub-pr-date">2025-09-04</span><span class="pub-pr-type">Migración</span><span class="pub-pr-desc">Migration to 18.0</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>OCA/server-ux <span class="pub-mod-count">1</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Módulo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/OCA/server-ux/pull/896" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-mod">server_action_mass_edit</span><span class="pub-pr-date">2024-06-14</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Rename mass editing line table and model</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="pub-repo-group">
+          <h3>Otros repos públicos <span class="pub-count-badge">~25</span></h3>
+
+          <div class="pub-subgroup">
+            <h4>CLaurelB/odoo_getting_started_16.0 <span class="pub-mod-count">16</span></h4>
+            <p class="pub-repo-note">Material de aprendizaje Odoo 16 — chapters del tutorial y modelo estate.</p>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/15" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Missing gitignore added</span><span class="pub-pr-status merged">Merged</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/14" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Gitignore</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/16" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-07</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Added EstateProperty model</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/1" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-05</span><span class="pub-pr-type">Feature</span><span class="pub-pr-desc">Added EstateProperty model</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/13" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter15</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/12" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter14</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/11" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter13</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/10" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter12</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/9" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter11</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/8" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter10</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/CLaurelB/odoo_getting_started_16.0/pull/7" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-date">2023-06-06</span><span class="pub-pr-type">General</span><span class="pub-pr-desc">Chapter9</span><span class="pub-pr-status open">Open</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pub-subgroup">
+            <h4>Otros <span class="pub-mod-count">9</span></h4>
+            <div class="pub-pr-table">
+              <div class="pub-pr-head"><span>Repo</span><span>Fecha</span><span>Tipo</span><span>Descripción</span><span>Estado</span></div>
+              <a href="https://github.com/odoo/upgrade-util/pull/107" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-repo">odoo/upgrade-util</span><span class="pub-pr-date">2024-07-05</span><span class="pub-pr-type">Bugfix</span><span class="pub-pr-desc">[FIX] util.fields: error when table of model missing</span><span class="pub-pr-status closed">Closed</span>
+              </a>
+              <a href="https://github.com/CybroOdoo/CybroAddons/pull/302" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-repo">CybroOdoo/CybroAddons</span><span class="pub-pr-date">2024-01-31</span><span class="pub-pr-type">Bugfix</span><span class="pub-pr-desc">Fix license typo in manifests</span><span class="pub-pr-status open">Open</span>
+              </a>
+              <a href="https://github.com/avoinsystems/account-analytic/pull/2" target="_blank" class="pub-pr-row">
+                <span class="pub-pr-repo">avoinsystems/account-analytic</span><span class="pub-pr-date">2025-01-06</span><span class="pub-pr-type">Mejora</span><span class="pub-pr-desc">Improve tests to increase coverage</span><span class="pub-pr-status merged">Merged</span>
+              </a>
             </div>
           </div>
         </div>
@@ -535,97 +667,151 @@ import Base from '../layouts/Base.astro';
     margin-bottom: 24px;
   }
 
-  .public-group {
-    margin-bottom: 32px;
+  .pub-repo-group {
+    margin-bottom: 36px;
   }
 
-  .public-group h3 {
-    font-size: 0.95rem;
+  .pub-repo-group h3 {
+    font-size: 1rem;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border);
   }
 
-  .pub-total {
+  .pub-count-badge {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--accent);
     margin-left: 8px;
   }
 
-  .pub-pr-list {
+  .pub-repo-note {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    margin-top: 0;
+  }
+
+  .pub-subgroup {
+    margin-bottom: 20px;
+  }
+
+  .pub-subgroup h4 {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  .pub-mod-count {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-left: 6px;
+  }
+
+  .pub-pr-table {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
   }
 
-  .pub-pr {
+  .pub-pr-head {
     display: flex;
-    align-items: baseline;
     gap: 10px;
-    padding: 6px 10px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    transition: background 0.15s;
+    padding: 8px 12px;
+    background: var(--bg);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
-  .pub-pr:hover {
+  .pub-pr-head span {
+    flex: 1;
+  }
+
+  .pub-pr-row {
+    display: flex;
+    gap: 10px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    color: var(--text);
+    text-decoration: none;
+    border-top: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .pub-pr-row:hover {
     background: rgba(99, 102, 241, 0.04);
   }
 
-  .pub-pr-link {
+  .pub-pr-repo {
+    flex: 1;
     font-family: var(--font-mono);
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--accent);
-    text-decoration: none;
-    min-width: 200px;
+    font-size: 0.78rem;
   }
 
-  .pub-pr-link:hover {
-    text-decoration: underline;
+  .pub-pr-mod {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
   }
 
-  .pub-pr-count {
+  .pub-pr-date {
+    flex: 1;
     font-family: var(--font-mono);
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--accent);
-    min-width: 40px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .pub-pr-type {
+    flex: 1;
   }
 
   .pub-pr-desc {
+    flex: 2;
+    color: var(--text-secondary);
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .pub-pr-desc a {
-    color: var(--text-secondary);
-    text-decoration: underline;
-    text-decoration-color: var(--border);
-  }
-
-  .pub-pr-desc a:hover {
-    color: var(--accent);
-    text-decoration-color: var(--accent);
-  }
-
-  .pub-gist-link {
-    margin-top: 10px;
-    font-size: 0.82rem;
-  }
-
-  .pub-gist-link a {
-    color: var(--text-secondary);
-    text-decoration: none;
+  .pub-pr-status {
+    flex: 0 0 70px;
+    text-align: center;
+    font-size: 0.72rem;
     font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 1px 8px;
+    border-radius: 4px;
+    align-self: center;
   }
 
-  .pub-gist-link a:hover {
-    color: var(--accent);
-    text-decoration: underline;
+  .pub-pr-status.merged {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .pub-pr-status.open {
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  .pub-pr-status.closed {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
   }
 
   .public-summary {
