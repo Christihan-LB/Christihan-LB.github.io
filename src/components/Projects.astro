@@ -589,7 +589,7 @@
       }
 
       Object.entries(bars).forEach(([key, el]) => {
-        el.style.opacity = btn.dataset.view === 'total' ? '1' : key === 'vauxoo' && btn.dataset.view === 'privado' ? '1' : key !== 'vauxoo' && btn.dataset.view === 'publico' ? '1' : '0.35';
+        el.style.opacity = btn.dataset.view === 'total' ? '1' : btn.dataset.view === 'privado' && (key === 'vauxoo' || key === 'gitlab') ? '1' : btn.dataset.view === 'publico' && key === 'github' ? '1' : '0.35';
       });
     });
   });
